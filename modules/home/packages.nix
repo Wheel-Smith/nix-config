@@ -1,0 +1,32 @@
+{ pkgs, ... }:
+{
+  home.packages = with pkgs; [
+    bat
+    btop
+    cmatrix
+    curl
+    exiftool
+    eza
+    fastfetch
+    fd
+    ffmpeg
+    fzf
+    gh
+    git
+    imagemagick
+    jq
+    just
+    lazydocker
+    lazygit
+    nmap
+    pandoc
+    starship
+    tailscale
+    tmux
+    tree
+    uv
+    wireshark
+    yt-dlp
+    zoxide
+  ];
+}

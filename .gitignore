@@ -1,0 +1,7 @@
+result
+result-*
+.DS_Store
+.direnv
+*.backup
+secrets/*
+!secrets/README.md
