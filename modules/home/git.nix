@@ -14,8 +14,6 @@
         "pycache/"
         ".pyc"
         ".swp"
-        "result"
-        "result-"
     ];
 
     settings = {
