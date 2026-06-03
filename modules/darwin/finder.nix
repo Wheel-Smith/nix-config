@@ -4,6 +4,6 @@
     ShowPathbar = true;
     ShowStatusBar = true;
     FXDefaultSearchScope = "SCcf";
-    FXPreferredViewStyle = "Nlsv";
+    FXPreferredViewStyle = "clmv";
   };
 }
