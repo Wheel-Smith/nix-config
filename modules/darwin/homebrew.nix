@@ -6,7 +6,7 @@
     onActivation = {
       autoUpdate = false;
       upgrade = false;
-      cleanup = "zap";
+      cleanup = "uninstall";
     };
 
     brews = [
