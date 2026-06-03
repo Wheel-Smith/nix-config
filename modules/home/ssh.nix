@@ -20,7 +20,7 @@
         UseKeychain = "yes";
       };
 
-      "" = {
+      "*" = {
         AddKeysToAgent = "yes";
         ServerAliveInterval = 60;
         ServerAliveCountMax = 3;
