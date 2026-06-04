@@ -14,5 +14,6 @@
     ./security.nix
     ./fonts.nix
     ./packages.nix
+    ./firewall.nix
   ];
 }
