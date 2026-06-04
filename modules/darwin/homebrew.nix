@@ -28,7 +28,7 @@
       "legcord"
       "libreoffice"
       "localsend"
-      "nordvpn"
+      # "nordvpn"
       "obsidian"
       "ollama-app"
       "orbstack"
