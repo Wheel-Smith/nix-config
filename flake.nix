@@ -21,9 +21,8 @@
 
     nix-homebrew = {
        url = "github:zhaofengli/nix-homebrew";
-       inputs.brew-src.url = "github:Homebrew/brew/5.1.14";
+       inputs.brew-src.url = "github:Homebrew/brew/6.0.11";
      };
-
 
     homebrew-core = {
       url = "github:homebrew/homebrew-core";
@@ -85,8 +84,19 @@
               "homebrew/homebrew-bundle" = homebrew-bundle;
               "xykong/homebrew-tap" = xykongTap;
             };
+            trust = {
+              formulae = [];
+              casks = [ "xykong/tap/flux-markdown" ];
+              commands = [];
+              taps = [];
+            };
           };
         }
+        # Align nix-darwin's homebrew.taps with the taps nix-homebrew manages,
+        # so `brew bundle` cleanup doesn't try to untap read-only Nix-store taps.
+        ({ config, ... }: {
+          homebrew.taps = builtins.attrNames config.nix-homebrew.taps;
+        })
         ./hosts/${hostName}
       ];
     };
