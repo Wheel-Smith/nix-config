@@ -4,6 +4,7 @@
     ./nix.nix
     ./system.nix
     ./homebrew.nix
+    ./hostname.nix
     ./dock.nix
     ./finder.nix
     ./keyboard.nix
