@@ -43,10 +43,10 @@ upgrade: update switch
 fmt:
     nix fmt
 
-# Garbage-collect old generations and unreferenced store paths
+# Delete generations older than 7 days instead of everything
 clean:
-    sudo nix-collect-garbage -d
-    nix-collect-garbage -d
+    sudo nix-collect-garbage --delete-older-than 7d
+    nix-collect-garbage --delete-older-than 7d
 
 # Show current system generations
 generations:
