@@ -3,7 +3,7 @@
   home.file.".config/ghostty/config".text = ''
 theme = Gruvbox Material Dark
 font-family = "CaskaydiaMono Nerd Font Mono"
-font-size = 20
+font-size = 15
 background-blur-radius = 20
 mouse-hide-while-typing = true
 window-decoration = true
