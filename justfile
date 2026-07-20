@@ -12,6 +12,10 @@ check:
 build:
     darwin-rebuild build --flake .#{{host}}
 
+# Show what would change (package versions, etc.)
+diff:
+    nix store diff-closures /run/current-system ./result
+
 # Apply the configuration
 switch:
     sudo darwin-rebuild switch --flake .#{{host}}
