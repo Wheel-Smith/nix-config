@@ -44,6 +44,10 @@
       flake = false;
     };
 
+    nix-vscode-extensions = {
+      url = "github:nix-community/nix-vscode-extensions";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs = inputs@{
@@ -56,8 +60,10 @@
     homebrew-cask,
     homebrew-bundle,
     xykongTap,
+    nix-vscode-extensions,
     ...
   }:
+
   let
     username = "rattatui";
     system = "aarch64-darwin";
@@ -69,6 +75,8 @@
         nix-homebrew.darwinModules.nix-homebrew
         {
           nixpkgs.hostPlatform = system;
+          nixpkgs.overlays = [ nix-vscode-extensions.overlays.default ];
+          nixpkgs.config.allowUnfree = true;
           networking.hostName = hostName;
           networking.localHostName = hostName;
           system.primaryUser = username;
