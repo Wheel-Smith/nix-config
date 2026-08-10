@@ -12,6 +12,7 @@
   home.sessionVariables = {
     XDG_CONFIG_HOME = "$HOME/.config";
     HISTIGNORE = "pwd:ls:cd";
+    MANROFFOPT = "-c";
     MANPAGER = "sh -c 'col -bx | bat -l man -p'";
     FZF_DEFAULT_OPTS = ''
       --preview 'bat -n --color=always --line-range :500 {}'

@@ -4,8 +4,8 @@
     enable = true;
 
     onActivation = {
-      autoUpdate = false;
-      upgrade = false;
+      autoUpdate = true;
+      upgrade = true;
       cleanup = "uninstall";
     };
 
@@ -18,6 +18,8 @@
     casks = [
       "brave-browser"
       "caido"
+      "claude"
+      "claude-code"
       "codex"
       "crystalfetch"
       "cyberduck"
@@ -27,7 +29,7 @@
       "xykong/tap/flux-markdown"
       "ghostty"
       "legcord"
-      "libreoffice"
+      # "libreoffice"
       "localsend"
       # "nordvpn"
       "obsidian"
@@ -43,7 +45,7 @@
       "shottr"
       "slack"
       "spotify"
-      "stats"
+      # "stats"
       "tailscale-app"
       "telegram"
       "utm"

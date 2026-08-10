@@ -19,7 +19,7 @@
     lazydocker
     lazygit
     nil
-    nixfmt-rfc-style
+    nixfmt
     nmap
     pandoc
     starship

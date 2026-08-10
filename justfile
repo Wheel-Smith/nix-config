@@ -36,8 +36,14 @@ update:
 update-input input:
     nix flake update {{input}}
 
-# Update inputs, then switch
-upgrade: update switch
+# Update Homebrew itself and upgrade installed formulae/casks
+brew-upgrade:
+    brew update
+    brew upgrade
+    brew upgrade --cask
+
+# Update everything: flake inputs, brew packages, then switch
+upgrade: update brew-upgrade switch
 
 # Format all Nix files (requires nixpkgs-fmt / alejandra in your packages)
 fmt:
