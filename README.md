@@ -11,7 +11,7 @@ Homebrew prompts, no clicking through GUI installers.
 | Host | User | Machine |
 |---|---|---|
 | `beast` | `rattatui` | Personal Mac — owns everything about itself |
-| `work` | `kristjan` | Intune-managed work Mac — see [`docs/work-mac.md`](docs/work-mac.md) |
+| `work` | `kristjan` | MDM-managed work Mac — see [`docs/work-mac.md`](docs/work-mac.md) |
 
 Both hosts are `aarch64-darwin` (Apple Silicon), with Homebrew pinned via
 `nix-homebrew` (tap-trust aware, Golden Gate-ready).
@@ -146,7 +146,7 @@ git push
 
 ## Hostname / computer name
 
-> **`beast` only.** `hostname.nix` is not imported on the work host — Intune
+> **`beast` only.** `hostname.nix` is not imported on the work host — the MDM
 > owns that machine's name and would revert us on every check-in. The `hostName`
 > passed to `mkDarwin` only names the flake output and the `hosts/` directory;
 > it is never written to `networking.*`.
@@ -243,7 +243,7 @@ Hosts share code through an `isWork` flag threaded via `specialArgs`:
 - **Per-host files** — `dock.nix`, `homebrew.nix`, `packages.nix` under
   `hosts/<host>/`.
 - **`beast`-only imports** — `firewall.nix`, `hostname.nix`. These are
-  compliance controls that Intune owns on the work Mac; see
+  compliance controls that the MDM owns on the work Mac; see
   [`docs/work-mac.md`](docs/work-mac.md) for why importing them there can hard-fail
   activation.
 

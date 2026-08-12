@@ -56,7 +56,7 @@ Recommended manual setup:
 ```bash
 mkdir -p ~/.ssh
 chmod 700 ~/.ssh
-ssh-keygen -t ed25519 -C "88578725+Wheel-Smith@users.noreply.github.com" -f ~/.ssh/id_ed25519
+ssh-keygen -t ed25519 -C "$(id -un)@$(scutil --get LocalHostName)" -f ~/.ssh/id_ed25519
 ssh-add --apple-use-keychain ~/.ssh/id_ed25519
 ```
 

@@ -68,13 +68,13 @@
     inherit (nixpkgs) lib;
     system = "aarch64-darwin";
 
-    # isWork gates everything that differs on an Intune-managed, supervised Mac.
+    # isWork gates everything that differs on an MDM-managed, supervised Mac.
     # The rule: nix-darwin owns ergonomics, MDM owns compliance controls. See
     # docs/work-mac.md for the full boundary and the reasoning behind it.
     #
     # Note that hostName here only names the flake output and hosts/ directory —
     # it is deliberately NOT written to networking.*, because on the work Mac
-    # Intune owns the machine name and would fight us over it every check-in.
+    # the MDM owns the machine name and would fight us over it every check-in.
     mkDarwin = { hostName, username, isWork ? false }: nix-darwin.lib.darwinSystem {
       inherit system;
       specialArgs = { inherit inputs username hostName isWork; };
@@ -130,7 +130,7 @@
       username = "rattatui";
     };
 
-    # Intune-managed work Mac. The machine keeps whatever name Intune gave it;
+    # MDM-managed work Mac. The machine keeps whatever name the MDM gave it;
     # "work" is only a flake label.
     darwinConfigurations.work = mkDarwin {
       hostName = "work";

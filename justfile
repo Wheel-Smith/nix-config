@@ -1,6 +1,6 @@
 # Which host to build. Detected from the username rather than the hostname,
 # because nix-darwin deliberately does not set the hostname on the work Mac
-# (Intune owns it), so `scutil --get LocalHostName` would be unpredictable.
+# (the MDM owns it), so `scutil --get LocalHostName` would be unpredictable.
 #
 # Override with `just host=<name> switch` if you ever need to force one.
 host := if `id -un` == "rattatui" { "beast" } else { "work" }

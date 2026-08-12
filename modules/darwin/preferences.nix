@@ -9,7 +9,7 @@
 
 # Power / sleep timers (backed by `pmset`, values in MINUTES; "never" disables).
 # Skipped on the work Mac: idle/display sleep is a compliance control that
-# Intune enforces by profile, and a laxer local value would flag as drift.
+# the MDM enforces by profile, and a laxer local value would flag as drift.
   power.sleep = lib.mkIf (!isWork) {
     computer = 30;   # system sleep after 30 min idle
     display = 15;    # display sleep after 15 min idle

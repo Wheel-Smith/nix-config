@@ -2,14 +2,14 @@
 
 ## What a VM can and cannot prove
 
-A stock UTM macOS VM is **not** Intune-enrolled, **not** supervised, has no
-config profiles, and no Defender. So be clear about what you are buying:
+A stock UTM macOS VM is **not** MDM-enrolled, **not** supervised, has no
+config profiles, and no endpoint security agent. So be clear about what you are buying:
 
 | A VM **does** prove | A VM **cannot** prove |
 |---|---|
 | The flake evaluates and activates on a clean machine | Activation survives a profile-locked setting |
-| Every `system.defaults` write lands correctly | Whether Intune reverts the machine name |
-| Homebrew installs and the cask set is right | Defender's scanning cost on `/nix/store` |
+| Every `system.defaults` write lands correctly | Whether the MDM reverts the machine name |
+| Homebrew installs and the cask set is right | its scanning cost on `/nix/store` |
 | Colima, `docker compose`, git identities, symlinks | `dscl` behaviour on a Platform-SSO account |
 | Rollback works | That OneDrive's real tenant folder is globbed right |
 
@@ -27,9 +27,9 @@ runs, and it is invisible from a home network.
    This matters: the config hardcodes that username, and `just` detects the host
    from `id -un`. Skip the Apple ID (macOS VMs cannot use iCloud anyway, which
    happens to match the work Mac's configuration).
-4. Name the machine **`vm-test`** in Setup Assistant. Nix will not touch
+4. Name the machine anything neutral (e.g. `vm-test`) in Setup Assistant. Nix will not touch
    it — `.#work` sets no `networking.*`, exactly as on the real work Mac where
-   Intune owns the name. Setting it by hand here mirrors that: the name comes
+   the MDM owns the name. Setting it by hand here mirrors that: the name comes
    from outside the config, and `just verify` reports it rather than asserting
    it.
 5. **Snapshot the VM now**, before installing anything, so you can re-run the
@@ -101,13 +101,13 @@ And confirm Nix left the machine name alone — it should still be whatever you
 typed in Setup Assistant, not anything from the config:
 
 ```bash
-scutil --get ComputerName    # vm-test, unchanged by any switch
+scutil --get ComputerName    # whatever you typed, unchanged by any switch
 ```
 
 ## After the VM passes
 
 The VM has validated the configuration. What remains untested on the real
-machine is only the managed-Mac surface: profile conflicts, Defender, and the
+machine is only the managed-Mac surface: profile conflicts, the endpoint agent, and the
 corporate network — and if you ran the VM on the work MacBook, the network part
 is covered too.
 

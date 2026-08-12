@@ -1,6 +1,6 @@
 { ... }:
 # Personal machine. Owns everything about itself, including the settings the
-# work host hands over to Intune.
+# work host hands over to the MDM.
 {
   imports = [
     ../../modules/darwin

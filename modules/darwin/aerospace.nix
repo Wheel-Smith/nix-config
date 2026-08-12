@@ -17,9 +17,9 @@ let
     { "if"."app-id" = "com.microsoft.VSCode"; run = "move-node-to-workspace C"; }
   ];
 
-  # Teams ships as com.microsoft.teams2 since the 2023 rewrite; the old id is
-  # kept so the rule survives either build. Both Microsoft apps come from
-  # Intune, not from our Homebrew list.
+  # The chat client ships under a new bundle id since its 2023 rewrite; the old
+  # id is kept so the rule survives either build. Both corporate apps are
+  # MDM-deployed, not in our Homebrew list.
   workWindowRules = [
     { "if"."app-id" = "com.brave.Browser"; run = "move-node-to-workspace 1"; }
     { "if"."app-id" = "md.obsidian"; run = "move-node-to-workspace 2"; }

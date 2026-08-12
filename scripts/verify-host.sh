@@ -46,7 +46,7 @@ printf '\033[1mVerifying host: %s  (user: %s)\033[0m\n' "$HOST" "$(id -un)"
 head_ "Identity"
 # ---------------------------------------------------------------------------
 if [ "$HOST" = "work" ]; then
-  # Intune owns the name here; nix-darwin issues no scutil --set. Report it
+  # The MDM owns the name here; nix-darwin issues no scutil --set. Report it
   # rather than asserting, since the expected value is whatever IT chose.
   info "ComputerName:  $(scutil --get ComputerName 2>/dev/null || echo '<unset>')"
   info "LocalHostName: $(scutil --get LocalHostName 2>/dev/null || echo '<unset>')"
@@ -69,7 +69,7 @@ head_ "Things the work host must NOT manage"
 # ---------------------------------------------------------------------------
 if [ "$HOST" = "work" ]; then
   # We never call socketfilterfw. On a clean VM this reads disabled; on the real
-  # managed Mac Intune may well have enabled it, and that is fine and expected —
+  # managed Mac the MDM may well have enabled it, and that is fine and expected —
   # the point is only that WE are not the one setting it.
   info "app firewall: $(/usr/libexec/ApplicationFirewall/socketfilterfw --getglobalstate 2>/dev/null | tail -1)"
 
@@ -133,7 +133,7 @@ dockcount="$(printf '%s\n' "$dockapps" | command grep -c '\.app')"
 if [ "$HOST" = "work" ]; then
   expect "dock item count" "10" "$dockcount"
   printf '%s' "$dockapps" | command grep -q "Microsoft Teams" \
-    && ok "Teams pinned (Intune-installed, referenced not managed)" \
+    && ok "Teams pinned (MDM-installed, referenced not managed)" \
     || no "Teams pinned" "not in dock"
   printf '%s' "$dockapps" | command grep -q "Proton Mail" \
     && no "no personal apps in dock" "Proton Mail present" \
@@ -148,7 +148,9 @@ head_ "Homebrew"
 if command -v brew >/dev/null 2>&1; then
   casks="$(brew list --cask 2>/dev/null | command sort | command tr '\n' ' ')"
   if [ "$HOST" = "work" ]; then
-    want="brave-browser caido crystalfetch dbeaver-community firefox ghostty obsidian postman slack spotify utm visual-studio-code vlc "
+    # Keep in sync with hosts/work/homebrew.nix. Slack is deliberately absent:
+    # it is admin-deployed, so brew must not own it.
+    want="brave-browser caido crystalfetch dbeaver-community firefox ghostty obsidian postman spotify utm visual-studio-code vlc "
     expect "cask set matches config" "$want" "$casks"
     for banned in tailscale-app protonvpn rustdesk wireshark-app orbstack raycast claude ollama-app; do
       printf '%s' "$casks" | command grep -qw "$banned" \

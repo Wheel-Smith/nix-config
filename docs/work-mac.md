@@ -1,8 +1,15 @@
 # Work Mac (`.#work`)
 
-The work machine is Apple Silicon, enrolled in **Intune**, supervised, signed in
-with a Managed Apple Account (iCloud Drive off, OneDrive instead), and running
-**Microsoft Defender for Endpoint**. This document covers what that changes.
+The work machine is Apple Silicon, **MDM-enrolled** and supervised, signed in
+with a Managed Apple Account (iCloud Drive off, a corporate cloud-storage client
+instead), and running an always-on **endpoint security agent**. This document
+covers what that changes.
+
+Vendor names are deliberately generalised throughout: the constraints below come
+from *being* a managed Mac, not from any particular MDM or EDR product, and the
+combination of specific products would help identify the employer. Where a
+literal string is functionally required — a bundle id, an app path, a CLI name —
+it is kept as-is.
 
 ## The governing rule
 
@@ -19,7 +26,7 @@ So the work host does not manage:
 | Setting | Where it lives | Why it's excluded |
 |---|---|---|
 | Application firewall, stealth mode, guest login | `modules/darwin/firewall.nix` (not imported) | Can hard-fail activation |
-| `hostName` / `localHostName` / `computerName` | `modules/darwin/hostname.nix` (not imported) | Intune enforces naming and re-renames on check-in |
+| `hostName` / `localHostName` / `computerName` | `modules/darwin/hostname.nix` (not imported) | the MDM enforces naming and re-renames on check-in |
 | `power.sleep` | `preferences.nix`, gated by `isWork` | Idle/display sleep is a compliance control |
 | `screensaver.askForPassword*` | `preferences.nix`, gated by `isWork` | Profile always wins; would be dead config |
 
@@ -161,20 +168,20 @@ If step 2 fails, `sudo darwin-rebuild rollback` returns you to the previous
 generation. On a first-ever activation there is no previous generation to return
 to, which is what the VM run is for.
 
-## Defender and `/nix/store`
+## The endpoint agent and `/nix/store`
 
-Defender's real-time protection scans every file written to disk, and a Nix
-build writes tens of thousands of small files. Expect `wdavdaemon` to pin a core
-and slow builds noticeably.
+Real-time protection scans every file written to disk, and a Nix build writes
+tens of thousands of small files. Expect the scanner daemon to pin a core and
+slow builds noticeably.
 
 Benchmark a real switch first, then ask IT for a folder exclusion on `/nix` only
-if it actually hurts. Note that **local exclusions are locked when Defender is
-managed by Intune** — `mdatp exclusion folder add` will be rejected, so only IT
-can add it via a configuration profile.
+if it actually hurts. The catch: **when the agent's settings are MDM-managed,
+local exclusions are locked** — adding one from the command line is rejected, so
+only IT can do it via a configuration profile.
 
-```bash
-mdatp health --field real_time_protection_enabled
-```
+Check whether real-time protection is on using whatever CLI your agent ships
+(for the common Microsoft one, `mdatp health --field
+real_time_protection_enabled`), then watch CPU during a build.
 
 ## Containers
 
@@ -193,11 +200,12 @@ into `~/.docker/cli-plugins/`.
 ## Homebrew
 
 `cleanup = "uninstall"` is safe here: brew only uninstalls what is in its own
-registry, and apps Intune deploys as `.pkg`/`.dmg` are invisible to it.
+registry, and apps the MDM deploys as `.pkg`/`.dmg` are invisible to it.
 
-> **Hard rule: never add a cask for an app Intune deploys** — Teams, Outlook,
-> Office, OneDrive, Edge, Company Portal, Defender, the VPN client.
-> `onActivation.upgrade` would bump it on every switch, Intune would revert it
+> **Hard rule: never add a cask for an app the MDM deploys** — the office
+> suite, mail and chat clients, cloud storage, the managed browser, the
+> management agent, the endpoint security agent, the VPN client.
+> `onActivation.upgrade` would bump it on every switch, the MDM would revert it
 > on every check-in, and the two would fight forever.
 
 ## Things that are deliberately absent
@@ -224,5 +232,5 @@ signature, and Aerospace lives at a `/nix/store/<hash>-aerospace-…/` path that
 changes on every package update. A version bump can silently drop the grant and
 you re-approve it. Not specific to the work Mac.
 
-**Tiling and video calls.** Teams and Zoom floating call/screen-share windows
+**Tiling and video calls.** Conferencing apps' floating call/screen-share windows
 sometimes fight the tiler. Fix with a float rule, not by dropping Aerospace.

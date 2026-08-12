@@ -56,10 +56,10 @@
       "wireshark-app"
     ];
 
-#    masApps = {
-#      "DigiDoc4" = 1370791134;
-#      "eduVPN" = 1317704208;
-#      "Perplexity" = 6714467650;
-#    };
+    masApps = {
+      "DigiDoc4" = 1370791134;
+      "eduVPN" = 1317704208;
+      "Perplexity" = 6714467650;
+    };
   };
 }

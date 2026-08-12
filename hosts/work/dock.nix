@@ -12,9 +12,9 @@
     # Finder is always pinned by macOS as the first Dock item, so the list
     # below starts with the first app after Finder.
     #
-    # The Microsoft apps are installed by Intune, not by us — we only reference
-    # their paths. If one is missing on the machine, macOS silently drops that
-    # Dock entry, so an unused entry is harmless.
+    # The corporate apps below are deployed by the MDM, not by us — we only
+    # reference their paths. If one is missing on the machine, macOS silently
+    # drops that Dock entry, so an unused entry is harmless.
     persistent-apps = [
       "/System/Applications/Launchpad.app"
       "/Applications/Brave Browser.app"

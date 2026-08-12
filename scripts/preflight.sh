@@ -239,16 +239,27 @@ head_ "7. MDM surface (informational)"
 # ---------------------------------------------------------------------------
 if [ -d "/Library/Managed Preferences" ]; then
   n="$(ls "/Library/Managed Preferences" 2>/dev/null | command wc -l | command tr -d ' ')"
-  note "$n managed preference domains present:"
-  ls "/Library/Managed Preferences" 2>/dev/null | command sed 's/^/            /'
+  note "$n managed preference domains present"
   note "any system.defaults we write for these domains will lose silently"
+  # The domain list is the most org-identifying thing this script can emit, and
+  # script output gets pasted into chats and issues. Off by default.
+  if [ "${PREFLIGHT_VERBOSE:-0}" = "1" ]; then
+    ls "/Library/Managed Preferences" 2>/dev/null | command sed 's/^/            /'
+  else
+    note "set PREFLIGHT_VERBOSE=1 to list them (identifies your employer — do not paste)"
+  fi
 else
   ok "no managed preferences"
 fi
 
-if [ -d /Applications/Santa.app ] || [ -d "/Applications/Microsoft Defender.app" ]; then
+# Any always-on scanner will chew through the many small files a Nix build
+# writes. Matched by directory name only; nothing here is vendor-specific.
+for agent in /Applications/*Defender*.app /Applications/*CrowdStrike*.app \
+             /Applications/*SentinelOne*.app /Applications/*Sophos*.app; do
+  [ -d "$agent" ] || continue
   note "endpoint agent present — expect slow builds until /nix is excluded"
-fi
+  break
+done
 
 # ---------------------------------------------------------------------------
 printf '\n\033[1m%d blockers, %d conflicts to clear\033[0m\n' "$blockers" "$conflicts"
