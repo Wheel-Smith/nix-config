@@ -15,13 +15,24 @@
     };
 
 #    nix-homebrew.url = "github:zhaofengli-wip/nix-homebrew";
-# Keep Homebrew runtime aligned with pinned homebrew-cask definitions.
-# Needed because newer casks such as libreoffice-still use newer
-# macOS dependency DSL that older brew runtimes reject.
+# Keep the Homebrew RUNTIME at least as new as the homebrew-core and
+# homebrew-cask inputs below. Those taps move independently, and formula/cask
+# definitions adopt new DSL keywords as they go — an older brew runtime then
+# rejects them outright.
+#
+# This is not theoretical: pinned at 6.0.13 the runtime could not parse
+# homebrew-core's `node` ("unknown keyword: :overwrite"), so `opencode`, which
+# depends on it, could not be resolved. `brew bundle` exited non-zero, and
+# because it runs BEFORE home-manager in the activation script, the whole
+# switch aborted — leaving /run/current-system and ~/.zshenv on the previous
+# generation while the system profile had already moved forward.
+#
+# If a `just switch` ever dies in "Homebrew bundle...", check for unreadable
+# formulae first and bump this pin before anything else.
 
     nix-homebrew = {
        url = "github:zhaofengli/nix-homebrew";
-       inputs.brew-src.url = "github:Homebrew/brew/6.0.13";
+       inputs.brew-src.url = "github:Homebrew/brew/6.0.17";
      };
 
     homebrew-core = {

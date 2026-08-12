@@ -256,6 +256,9 @@ Hosts share code through an `isWork` flag threaded via `specialArgs`:
 | `The option 'nix-homebrew.trust' does not exist` | `flake.lock` pins a `nix-homebrew` commit older than the tap-trust feature (PR #157) | `just update-input nix-homebrew` |
 | `nixos-render-docs: error: unrecognized arguments: --sidebar-depth` | `nix-darwin` is newer than `nixpkgs` | `just update-input nixpkgs` (keep them in sync). Temporary bypass: `documentation.enable = false;` |
 | `Homebrew requires formulae to be in a tap, rejecting` | Old `nix-homebrew` rejecting `/nix/store`-backed taps (issue #148) | `just update-input nix-homebrew` (needs the PR #150 fix) |
+| `unknown keyword: :overwrite` (or any *"formula is unreadable"*), then `brew bundle can't satisfy your Brewfile` | `brew-src` runtime older than the `homebrew-core`/`homebrew-cask` inputs, which have adopted a newer DSL | bump `inputs.brew-src.url` in `flake.nix` to the current Homebrew tag |
+| `just switch` dies at "Homebrew bundle…" and afterwards `man` pages, `$PATH` or session vars look stale | `brew bundle` runs **before** home-manager in the activation script, so a non-zero exit aborts everything after it — the system profile advances but `/run/current-system` and `~/.zshenv` do not | fix the Homebrew error, re-run `just switch`. Confirm with `readlink /run/current-system` vs `readlink -f /nix/var/nix/profiles/system` — they must match |
+| `Refusing to load … from untrusted tap` **only in an interactive shell** | trust lives in `$XDG_CONFIG_HOME/homebrew/trust.json` when that variable is set, but `nix-homebrew` writes it under `sudo` (env scrubbed) to `~/.homebrew/trust.json`. Activation reads the right one; your shell doesn't | harmless for activation. To silence it interactively: `env -u XDG_CONFIG_HOME brew …` |
 | `Refusing to load … from untrusted tap` | Third-party tap not trusted | add a `nix-homebrew.trust` entry |
 | `Untapping … Permission denied` on activation | `homebrew.taps` empty while taps exist on disk, so cleanup tries to untap read-only Nix-store taps | add `homebrew.taps = builtins.attrNames config.nix-homebrew.taps;` |
 | `brew bundle` cleanup fails needing `--force` | Homebrew 6.0 CLI flag change (issue #1787) | update `nix-darwin` past PR #1789, or set `homebrew.onActivation.extraFlags = [ "--force-cleanup" ];` |
@@ -269,6 +272,9 @@ Hosts share code through an `isWork` flag threaded via `specialArgs`:
 - **Do not install Homebrew or `just` manually** — `nix-homebrew` installs and
   pins Homebrew, and `just` comes from your Nix packages. Manual installs will
   conflict with the Nix-managed copies.
-- **Golden Gate:** `brew-src` is pinned to `6.0.11`, the first Homebrew line
-  with initial macOS 27 support. Keep this pin while on the beta.
+- **`brew-src` pin:** currently `6.0.17`. The floor is macOS 27 support (first
+  in the 6.0.11 line), but the pin must also stay **at least as new as the
+  `homebrew-core` / `homebrew-cask` inputs**, which move independently and adopt
+  new DSL keywords over time. Too old a runtime rejects formulae outright — see
+  the troubleshooting row below.
 - **Verify casks installed:** `brew list --cask | wc -l`.

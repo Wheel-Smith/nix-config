@@ -12,7 +12,7 @@
     brews = [
       "lazyssh"
       "mole"
-      "opencode"
+      # "opencode"
     ];
 
     casks = [
@@ -59,7 +59,6 @@
     masApps = {
       "DigiDoc4" = 1370791134;
       "eduVPN" = 1317704208;
-      "Perplexity" = 6714467650;
     };
   };
 }
