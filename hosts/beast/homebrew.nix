@@ -29,7 +29,7 @@
       "xykong/tap/flux-markdown"
       "ghostty"
       "legcord"
-      # "libreoffice"
+      "libreoffice"
       "localsend"
       # "nordvpn"
       "obsidian"
