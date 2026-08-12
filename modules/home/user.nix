@@ -1,7 +1,8 @@
-{ pkgs, lib, ... }:
+{ username, ... }:
 {
   imports = [
     ./packages.nix
+    ./containers.nix
     ./zsh.nix
     ./starship.nix
     ./git.nix
@@ -17,8 +18,11 @@
   ];
 
   home = {
-    username = "rattatui";
-    homeDirectory = "/Users/rattatui";
+    inherit username;
+    homeDirectory = "/Users/${username}";
+
+    # Matches beast so both hosts get identical home-manager compatibility
+    # behaviour. Do not bump casually.
     stateVersion = "25.05";
   };
 

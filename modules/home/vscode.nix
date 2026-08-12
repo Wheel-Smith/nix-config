@@ -14,7 +14,29 @@
 #
 # Some extensions call external binaries that must be on PATH — added in
 # modules/home/devtools.nix: nil + nixfmt (nix-ide), shfmt (shell-format).
-{ pkgs, ... }:
+{ pkgs, isWork, ... }:
+let
+  # Work host manages no extensions through Nix. Settings below still apply,
+  # and the binaries those settings point at (nil, nixfmt, shfmt) still come
+  # from devtools.nix.
+  nixManagedExtensions = with pkgs.vscode-marketplace; [
+    eamodio.gitlens
+    georglauterbach.evergruv
+    ms-azuretools.vscode-containers
+    ms-python.debugpy
+    ms-python.python
+    ms-python.vscode-pylance
+    ms-python.vscode-python-envs
+    ms-vscode-remote.remote-containers
+    tailscale.vscode-tailscale
+    charliermarsh.ruff
+    jnoortheen.nix-ide
+    redhat.vscode-yaml            # docker-compose, nginx, vault
+    tamasfe.even-better-toml      # pyproject.toml, ruff.toml
+    timonwong.shellcheck          # bash/zsh linting (binary bundled)
+    foxundermoon.shell-format     # sh / Dockerfile / .env formatting (needs shfmt)
+  ];
+in
 {
   programs.vscode = {
     enable = true;
@@ -24,30 +46,16 @@
     # use `package = pkgs.emptyDirectory;` instead (same effect).
     package = null;
 
-    # Extensions are managed by Nix; VS Code can't add/remove them itself.
-    mutableExtensionsDir = false;
+    # beast: extensions are managed by Nix and VS Code can't add/remove them.
+    # work:  Nix manages none, so the directory must stay writable or VS Code
+    #        would be left unable to install anything at all.
+    mutableExtensionsDir = isWork;
 
     profiles.default = {
       enableExtensionUpdateCheck = false;
       enableUpdateCheck = false;
 
-      extensions = with pkgs.vscode-marketplace; [
-        eamodio.gitlens
-        georglauterbach.evergruv
-        ms-azuretools.vscode-containers
-        ms-python.debugpy
-        ms-python.python
-        ms-python.vscode-pylance
-        ms-python.vscode-python-envs
-        ms-vscode-remote.remote-containers
-        tailscale.vscode-tailscale
-        charliermarsh.ruff
-        jnoortheen.nix-ide
-        redhat.vscode-yaml            # docker-compose, nginx, vault
-        tamasfe.even-better-toml      # pyproject.toml, ruff.toml
-        timonwong.shellcheck          # bash/zsh linting (binary bundled)
-        foxundermoon.shell-format     # sh / Dockerfile / .env formatting (needs shfmt)
-      ];
+      extensions = if isWork then [ ] else nixManagedExtensions;
 
       userSettings = {
         "editor.formatOnSave" = true;

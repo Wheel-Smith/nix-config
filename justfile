@@ -1,4 +1,9 @@
-host := "beast"
+# Which host to build. Detected from the username rather than the hostname,
+# because nix-darwin deliberately does not set the hostname on the work Mac
+# (Intune owns it), so `scutil --get LocalHostName` would be unpredictable.
+#
+# Override for the staged rollout: `just host=work-minimal switch`
+host := if `id -un` == "rattatui" { "beast" } else { "work" }
 
 # List available recipes (default when you just run `just`)
 default:

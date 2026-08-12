@@ -1,4 +1,37 @@
-{ ... }:
+{ isWork, ... }:
+# Keybindings, gaps, modes and workspace letters are identical on both hosts.
+# Only the app -> workspace rules differ, since the two machines run different
+# apps.
+let
+  personalWindowRules = [
+    { "if"."app-id" = "com.brave.Browser"; run = "move-node-to-workspace 1"; }
+    { "if"."app-id" = "md.obsidian"; run = "move-node-to-workspace 2"; }
+    { "if"."app-id" = "ai.perplexity.mac"; run = "move-node-to-workspace 2"; }
+    { "if"."app-id" = "com.mitchellh.ghostty"; run = "move-node-to-workspace 3"; }
+    { "if"."app-id" = "com.apple.MobileSMS"; run = "move-node-to-workspace 4"; }
+    { "if"."app-id" = "net.whatsapp.WhatsApp"; run = "move-node-to-workspace 4"; }
+    { "if"."app-id" = "com.spotify.client"; run = "move-node-to-workspace 4"; }
+    { "if"."app-id" = "ch.protonmail.desktop"; run = "move-node-to-workspace 5"; }
+    { "if"."app-id" = "com.hnc.Discord"; run = "move-node-to-workspace 6"; }
+    { "if"."app-id" = "ru.keepcoder.Telegram"; run = "move-node-to-workspace T"; }
+    { "if"."app-id" = "com.microsoft.VSCode"; run = "move-node-to-workspace C"; }
+  ];
+
+  # Teams ships as com.microsoft.teams2 since the 2023 rewrite; the old id is
+  # kept so the rule survives either build. Both Microsoft apps come from
+  # Intune, not from our Homebrew list.
+  workWindowRules = [
+    { "if"."app-id" = "com.brave.Browser"; run = "move-node-to-workspace 1"; }
+    { "if"."app-id" = "md.obsidian"; run = "move-node-to-workspace 2"; }
+    { "if"."app-id" = "com.mitchellh.ghostty"; run = "move-node-to-workspace 3"; }
+    { "if"."app-id" = "com.microsoft.teams2"; run = "move-node-to-workspace 4"; }
+    { "if"."app-id" = "com.microsoft.teams"; run = "move-node-to-workspace 4"; }
+    { "if"."app-id" = "com.spotify.client"; run = "move-node-to-workspace 4"; }
+    { "if"."app-id" = "com.microsoft.Outlook"; run = "move-node-to-workspace 5"; }
+    { "if"."app-id" = "com.tinyspeck.slackmacgap"; run = "move-node-to-workspace S"; }
+    { "if"."app-id" = "com.microsoft.VSCode"; run = "move-node-to-workspace C"; }
+  ];
+in
 {
   services.aerospace = {
     enable = true;
@@ -144,19 +177,8 @@
         };
       };
 
-      "on-window-detected" = [
-        { "if"."app-id" = "com.brave.Browser"; run = "move-node-to-workspace 1"; }
-        { "if"."app-id" = "md.obsidian"; run = "move-node-to-workspace 2"; }
-        { "if"."app-id" = "ai.perplexity.mac"; run = "move-node-to-workspace 2"; }
-        { "if"."app-id" = "com.mitchellh.ghostty"; run = "move-node-to-workspace 3"; }
-        { "if"."app-id" = "com.apple.MobileSMS"; run = "move-node-to-workspace 4"; }
-        { "if"."app-id" = "net.whatsapp.WhatsApp"; run = "move-node-to-workspace 4"; }
-        { "if"."app-id" = "com.spotify.client"; run = "move-node-to-workspace 4"; }
-        { "if"."app-id" = "ch.protonmail.desktop"; run = "move-node-to-workspace 5"; }
-        { "if"."app-id" = "com.hnc.Discord"; run = "move-node-to-workspace 6"; }
-        { "if"."app-id" = "ru.keepcoder.Telegram"; run = "move-node-to-workspace T"; }
-        { "if"."app-id" = "com.microsoft.VSCode"; run = "move-node-to-workspace C"; }
-      ];
+      "on-window-detected" =
+        if isWork then workWindowRules else personalWindowRules;
     };
   };
 }

@@ -65,11 +65,23 @@
   }:
 
   let
-    username = "rattatui";
     system = "aarch64-darwin";
-    mkDarwin = hostName: nix-darwin.lib.darwinSystem {
+
+    # isWork gates everything that differs on an Intune-managed, supervised Mac.
+    # The rule: nix-darwin owns ergonomics, MDM owns compliance controls. See
+    # docs/work-mac.md for the full boundary and the reasoning behind it.
+    #
+    # Note that hostName here only names the flake output and hosts/ directory —
+    # it is deliberately NOT written to networking.*, because on the work Mac
+    # Intune owns the machine name and would fight us over it every check-in.
+    #
+    # minimal = true also disables nix-homebrew, so a stage-1 activation really
+    # is "Nix and home-manager only" — otherwise Homebrew would still be
+    # installed and /opt/homebrew taken over, which is exactly the layer the
+    # staged rollout is trying to defer.
+    mkDarwin = { hostName, username, isWork ? false, minimal ? false }: nix-darwin.lib.darwinSystem {
       inherit system;
-      specialArgs = { inherit inputs username hostName; };
+      specialArgs = { inherit inputs username hostName isWork; };
       modules = [
         home-manager.darwinModules.home-manager
         nix-homebrew.darwinModules.nix-homebrew
@@ -77,12 +89,10 @@
           nixpkgs.hostPlatform = system;
           nixpkgs.overlays = [ nix-vscode-extensions.overlays.default ];
           nixpkgs.config.allowUnfree = true;
-          networking.hostName = hostName;
-          networking.localHostName = hostName;
           system.primaryUser = username;
 
           nix-homebrew = {
-            enable = true;
+            enable = !minimal;
             user = username;
             autoMigrate = true;
             mutableTaps = false;
@@ -109,6 +119,28 @@
       ];
     };
   in {
-    darwinConfigurations.beast = mkDarwin "beast";
+    darwinConfigurations.beast = mkDarwin {
+      hostName = "beast";
+      username = "rattatui";
+    };
+
+    # Intune-managed work Mac. The machine keeps whatever name Intune gave it;
+    # "work" is only a flake label.
+    darwinConfigurations.work = mkDarwin {
+      hostName = "work";
+      username = "kristjan";
+      isWork = true;
+    };
+
+    # Staged-rollout scaffold: home-manager and packages only, zero
+    # system.defaults, no Homebrew. Activate this FIRST on the work Mac so a
+    # failure is attributable to one layer instead of fifteen modules. Safe to
+    # delete once .#work has activated cleanly.
+    darwinConfigurations.work-minimal = mkDarwin {
+      hostName = "work-minimal";
+      username = "kristjan";
+      isWork = true;
+      minimal = true;
+    };
   };
 }

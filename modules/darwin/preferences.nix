@@ -1,4 +1,4 @@
-{ ... }:
+{ lib, isWork, ... }:
 {
 # ---------------------------------------------------------------------------
 # TOP-LEVEL options (NOT under system.defaults) — NEW
@@ -8,7 +8,9 @@
   time.timeZone = "Europe/Tallinn";
 
 # Power / sleep timers (backed by `pmset`, values in MINUTES; "never" disables).
-  power.sleep = {
+# Skipped on the work Mac: idle/display sleep is a compliance control that
+# Intune enforces by profile, and a laxer local value would flag as drift.
+  power.sleep = lib.mkIf (!isWork) {
     computer = 30;   # system sleep after 30 min idle
     display = 15;    # display sleep after 15 min idle
     harddisk = 30;   # spin down disks after 30 min
@@ -68,7 +70,9 @@
     };
 
 # NEW: Screen lock — require password immediately after sleep/screensaver.
-    screensaver = {
+# Skipped on the work Mac: the MDM profile sets this and always wins, so
+# managing it here would be silently dead configuration.
+    screensaver = lib.mkIf (!isWork) {
       askForPassword = true;
       askForPasswordDelay = 0; # seconds
     };
@@ -118,15 +122,6 @@
         ];
       };
 
-# Unbind Cmd+Space from Spotlight so Raycast can use it.
-# Do NOT disable hotkey 65, because that is Option+Cmd+Space
-# for Finder search window.
-      "com.apple.symbolichotkeys" = {
-        AppleSymbolicHotKeys = {
-          "64" = { enabled = false; };
-        };
-      };
-
       "com.apple.ActivityMonitor" = {
         OpenMainWindow = true;
         IconType = 5;
@@ -145,6 +140,22 @@
       "com.apple.ImageCapture" = {
 # Prevent Photos/Image Capture from opening automatically when devices are plugged in.
         disableHotPlug = true;
+      };
+    }
+# CustomUserPreferences is a freeform attrset, not a set of typed options, so
+# lib.mkIf inside it would never be evaluated by the module system. Merge with
+# optionalAttrs instead.
+    // lib.optionalAttrs (!isWork) {
+# Unbind Cmd+Space from Spotlight so Raycast can use it.
+# Do NOT disable hotkey 65, because that is Option+Cmd+Space
+# for Finder search window.
+#
+# beast-only: the work Mac has no Raycast, so unbinding Cmd+Space there would
+# leave the shortcut doing nothing at all.
+      "com.apple.symbolichotkeys" = {
+        AppleSymbolicHotKeys = {
+          "64" = { enabled = false; };
+        };
       };
     };
   };

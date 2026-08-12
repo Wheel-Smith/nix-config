@@ -8,12 +8,17 @@ The goal: take a **brand-new Mac** from factory state to a fully configured
 system with a handful of commands — no manual app installs, no interactive
 Homebrew prompts, no clicking through GUI installers.
 
-| | |
-|---|---|
-| **Host** | `beast` |
-| **User** | `rattatui` |
-| **Platform** | `aarch64-darwin` (Apple Silicon) |
-| **Homebrew** | pinned to `6.0.11` via `nix-homebrew` (tap-trust aware, Golden Gate-ready) |
+| Host | User | Machine |
+|---|---|---|
+| `beast` | `rattatui` | Personal Mac — owns everything about itself |
+| `work` | `kristjan` | Intune-managed work Mac — see [`docs/work-mac.md`](docs/work-mac.md) |
+| `work-minimal` | `kristjan` | Staged-rollout scaffold; delete once `work` activates cleanly |
+
+Both hosts are `aarch64-darwin` (Apple Silicon), with Homebrew pinned via
+`nix-homebrew` (tap-trust aware, Golden Gate-ready).
+
+`just` picks the host automatically from `id -un`, so `just switch` means the
+right thing on either machine.
 
 ---
 
@@ -39,6 +44,10 @@ Homebrew prompts, no clicking through GUI installers.
 ---
 
 ## Bootstrap from scratch
+
+> Bootstrapping the **work** Mac is different — it needs hand-created identity
+> files, fresh SSH keys, and a staged activation. Follow
+> [`docs/work-mac.md`](docs/work-mac.md) instead of this section.
 
 ```bash
 # 1. Clone the config
@@ -138,6 +147,11 @@ git push
 
 ## Hostname / computer name
 
+> **`beast` only.** `hostname.nix` is not imported on the work host — Intune
+> owns that machine's name and would revert us on every check-in. The `hostName`
+> passed to `mkDarwin` only names the flake output and the `hosts/` directory;
+> it is never written to `networking.*`.
+
 macOS exposes **three** separate name fields. Setting only `hostName` (as the
 original config did) leaves the friendly "Computer Name" untouched, which is why
 the machine may still show up as `<username>s-MacBook-Pro`. Set all three for a
@@ -208,15 +222,31 @@ Third-party taps require two coordinated changes (Homebrew 6.0 **tap trust**):
 ```
 nix-config/
 ├── justfile                     # task runner recipes (just switch, just update, …)
-├── flake.nix                    # inputs, host definition, nix-homebrew + tap trust
+├── flake.nix                    # inputs, host definitions, nix-homebrew + tap trust
 ├── flake.lock                   # pinned dependency revisions (commit this!)
 ├── hosts/
-│   └── beast/                   # host-specific configuration
+│   ├── beast/                   # personal: dock, homebrew, packages + firewall/hostname
+│   ├── work/                    # work: dock, homebrew, packages (no firewall/hostname)
+│   └── work-minimal/            # stage-1 rollout scaffold
 └── modules/
-    └── darwin/
-        ├── homebrew.nix         # declarative brews / casks
-        └── hostname.nix         # hostName / localHostName / computerName
+    ├── darwin/                  # default.nix = the set safe on EVERY host
+    ├── home/                    # home-manager; gated by isWork where hosts differ
+    └── shared/
 ```
+
+Hosts share code through an `isWork` flag threaded via `specialArgs`:
+
+- **Identical on both** — `nix`, `system`, `finder`, `trackpad`, `keyboard`,
+  `screenshots`, `fonts`, `security`, and all the shell/editor modules.
+- **Shared, forked internally by `isWork`** — `preferences.nix`,
+  `aerospace.nix`, `packages.nix`, `git.nix`, `ssh.nix`, `links.nix`,
+  `vscode.nix`, `containers.nix`.
+- **Per-host files** — `dock.nix`, `homebrew.nix`, `packages.nix` under
+  `hosts/<host>/`.
+- **`beast`-only imports** — `firewall.nix`, `hostname.nix`. These are
+  compliance controls that Intune owns on the work Mac; see
+  [`docs/work-mac.md`](docs/work-mac.md) for why importing them there can hard-fail
+  activation.
 
 ---
 
