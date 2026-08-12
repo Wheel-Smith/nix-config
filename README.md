@@ -12,7 +12,6 @@ Homebrew prompts, no clicking through GUI installers.
 |---|---|---|
 | `beast` | `rattatui` | Personal Mac — owns everything about itself |
 | `work` | `kristjan` | Intune-managed work Mac — see [`docs/work-mac.md`](docs/work-mac.md) |
-| `work-minimal` | `kristjan` | Staged-rollout scaffold; delete once `work` activates cleanly |
 
 Both hosts are `aarch64-darwin` (Apple Silicon), with Homebrew pinned via
 `nix-homebrew` (tap-trust aware, Golden Gate-ready).
@@ -226,8 +225,8 @@ nix-config/
 ├── flake.lock                   # pinned dependency revisions (commit this!)
 ├── hosts/
 │   ├── beast/                   # personal: dock, homebrew, packages + firewall/hostname
-│   ├── work/                    # work: dock, homebrew, packages (no firewall/hostname)
-│   └── work-minimal/            # stage-1 rollout scaffold
+│   └── work/                    # work: dock, homebrew, packages (no firewall/hostname)
+├── scripts/                     # preflight.sh (before switch), verify-host.sh (after)
 └── modules/
     ├── darwin/                  # default.nix = the set safe on EVERY host
     ├── home/                    # home-manager; gated by isWork where hosts differ

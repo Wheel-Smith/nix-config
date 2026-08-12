@@ -47,10 +47,8 @@ cd ~/projects/nix-config
 sudo nix run nix-darwin -- switch --flake .#work
 ```
 
-Skip `work-minimal` here — staging exists to isolate managed-Mac interactions,
-and a VM has none. Go straight at the real target.
-
-Expect the first switch to take a while: Homebrew plus 13 casks is several GB.
+Expect the first switch to take a while: Homebrew plus a dozen casks is several
+GB.
 
 ## Verify
 
@@ -110,16 +108,23 @@ scutil --get ComputerName    # vm-test, unchanged by any switch
 
 The VM has validated the configuration. What remains untested on the real
 machine is only the managed-Mac surface: profile conflicts, Defender, and the
-corporate network.
+corporate network — and if you ran the VM on the work MacBook, the network part
+is covered too.
 
-`work-minimal` is still worth one command there, because it separates "Nix and
-home-manager work on this machine" from "the darwin system layer works on this
-machine" — and the latter is where a config profile would bite. If you would
-rather skip it, that is a defensible call now that the VM is green; just know
-`sudo darwin-rebuild rollback` is your only net.
+Run the pre-flight check first, since the real machine is not fresh:
 
 ```bash
-sudo nix run nix-darwin -- switch --flake .#work-minimal   # optional
-just switch
+./scripts/preflight.sh work
+```
+
+Then activate and confirm:
+
+```bash
+sudo nix run nix-darwin -- switch --flake .#work
+```
+
+```bash
 just verify
 ```
+
+`sudo darwin-rebuild rollback` is your net from the second generation onwards.

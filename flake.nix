@@ -75,12 +75,7 @@
     # Note that hostName here only names the flake output and hosts/ directory —
     # it is deliberately NOT written to networking.*, because on the work Mac
     # Intune owns the machine name and would fight us over it every check-in.
-    #
-    # minimal = true also disables nix-homebrew, so a stage-1 activation really
-    # is "Nix and home-manager only" — otherwise Homebrew would still be
-    # installed and /opt/homebrew taken over, which is exactly the layer the
-    # staged rollout is trying to defer.
-    mkDarwin = { hostName, username, isWork ? false, minimal ? false }: nix-darwin.lib.darwinSystem {
+    mkDarwin = { hostName, username, isWork ? false }: nix-darwin.lib.darwinSystem {
       inherit system;
       specialArgs = { inherit inputs username hostName isWork; };
       modules = [
@@ -93,7 +88,7 @@
           system.primaryUser = username;
 
           nix-homebrew = {
-            enable = !minimal;
+            enable = true;
             user = username;
             autoMigrate = true;
             mutableTaps = false;
@@ -141,17 +136,6 @@
       hostName = "work";
       username = "kristjan";
       isWork = true;
-    };
-
-    # Staged-rollout scaffold: home-manager and packages only, zero
-    # system.defaults, no Homebrew. Activate this FIRST on the work Mac so a
-    # failure is attributable to one layer instead of fifteen modules. Safe to
-    # delete once .#work has activated cleanly.
-    darwinConfigurations.work-minimal = mkDarwin {
-      hostName = "work-minimal";
-      username = "kristjan";
-      isWork = true;
-      minimal = true;
     };
   };
 }

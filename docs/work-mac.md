@@ -135,30 +135,31 @@ pushing your work email to a public repo.
 **5. Sign into OneDrive** so `~/Library/CloudStorage/OneDrive-<Tenant>` exists
 before the first switch, or the `~/onedrive` symlink is skipped.
 
-## Staged rollout
+## Rollout
 
-A VM cannot reproduce Intune, config profiles, or Defender — the interesting
-failures only appear on the real machine. So stage the activation, and make each
-failure attributable to one layer.
+Validate in the UTM VM first — see [vm-testing.md](vm-testing.md), and run the
+VM on the work MacBook so it inherits the corporate network. Then:
 
 ```bash
 # 1. On beast — catches every eval/build error, no sudo, no risk
 darwin-rebuild build --flake .#work
 
-# 2. On work — home-manager and packages only, zero system.defaults
-git clone git@github.com:Wheel-Smith/nix-config.git ~/projects/nix-config
+# 2. On work
+git clone https://github.com/Wheel-Smith/nix-config.git ~/projects/nix-config
 cd ~/projects/nix-config
-sudo nix run nix-darwin -- switch --flake .#work-minimal
+./scripts/preflight.sh work        # clear anything it reports first
+sudo nix run nix-darwin -- switch --flake .#work
 
-# 3. On work — the full configuration
-just switch
+# 3. Confirm the activation matches the config
+just verify
 ```
 
 `just` auto-detects the host from `id -un`, so `just switch` resolves to
-`.#work` here and `.#beast` on the personal machine. Override with
-`just host=work-minimal switch`.
+`.#work` here and `.#beast` on the personal machine.
 
-Delete `hosts/work-minimal/` and its flake output once step 3 succeeds.
+If step 2 fails, `sudo darwin-rebuild rollback` returns you to the previous
+generation. On a first-ever activation there is no previous generation to return
+to, which is what the VM run is for.
 
 ## Defender and `/nix/store`
 

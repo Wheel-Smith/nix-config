@@ -161,7 +161,7 @@ if command -v brew >/dev/null 2>&1; then
     info "beast casks: $(printf '%s' "$casks" | command wc -w | command tr -d ' ')"
   fi
 else
-  sk "brew not on PATH (expected on work-minimal, or open a new shell)"
+  sk "brew not on PATH — open a new shell after the first switch"
 fi
 
 # ---------------------------------------------------------------------------
