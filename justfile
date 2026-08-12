@@ -29,6 +29,10 @@ switch:
 bootstrap-switch:
     sudo nix run nix-darwin -- switch --flake .#{{host}}
 
+# Assert the activated system matches the config (run after `just switch`)
+verify:
+    ./scripts/verify-host.sh {{host}}
+
 # Roll back to the previous generation
 rollback:
     sudo darwin-rebuild rollback
