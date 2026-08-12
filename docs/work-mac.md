@@ -39,6 +39,44 @@ hostnames, or internal domains. Two consequences:
   copy git-tracked files into the store, so an untracked `local.nix` is
   invisible to `nix build`.
 
+## If the machine is not fresh
+
+Run the pre-flight check before anything else. It is read-only and prints the
+exact command to clear each finding.
+
+```bash
+./scripts/preflight.sh work     # or `just preflight` once just is on PATH
+```
+
+Four things collide on a machine that already has software on it:
+
+**Apps that are also in the cask list.** `brew install --cask ghostty` aborts
+with *"It seems there is already an App at /Applications/Ghostty.app"* when the
+app exists and brew did not put it there. That fails `brew bundle`, which fails
+the whole switch. Delete the app first — brew reinstalls it and takes ownership,
+and your settings in `~/Library` survive untouched.
+
+**A leftover `~/.gitconfig`.** Home Manager writes `~/.config/git/config`, but
+git reads *both* files and `~/.gitconfig` is read **last**, so its values win. A
+`[user] email` in there silently overrides `user.useConfigOnly` and re-enables
+exactly the wrong-identity commit this config is built to prevent. Home Manager
+will not warn you, because it never manages that path.
+
+```bash
+mv ~/.gitconfig ~/.gitconfig.pre-nix
+```
+
+**`~/.ssh/config`.** Home Manager replaces it. Copy any Host blocks you still
+need into `~/.ssh/config.local` *first* — otherwise they survive only inside
+`~/.ssh/config.hm-backup`.
+
+**Docker Desktop.** Fights Colima over the `docker` CLI and socket, and carries
+the same commercial-licence problem as OrbStack. Uninstall it.
+
+Everything else Home Manager touches (`~/.zshrc`, `~/.tmux.conf`,
+`~/.config/nvim`, `~/.config/ghostty/config`) is moved aside automatically by
+`backupFileExtension = "hm-backup"`.
+
 ## First-time setup
 
 Steps 2–5 cannot be automated and must be done by hand.
