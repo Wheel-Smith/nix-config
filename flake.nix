@@ -65,6 +65,7 @@
   }:
 
   let
+    inherit (nixpkgs) lib;
     system = "aarch64-darwin";
 
     # isWork gates everything that differs on an Intune-managed, supervised Mac.
@@ -96,15 +97,25 @@
             user = username;
             autoMigrate = true;
             mutableTaps = false;
+            # The xykong tap exists solely for flux-markdown, which is a beast
+            # cask. Tapping and trusting a third-party tap on the work Mac for
+            # a package it never installs is pure downside: an extra
+            # third-party source in Homebrew's trust store, on a corporate
+            # device, for zero benefit.
+            #
+            # Getting this right BEFORE the first work activation matters,
+            # because trust entries are add-only — dropping one from this list
+            # later does not revoke it, you would need `brew untrust`.
             taps = {
               "homebrew/homebrew-core" = homebrew-core;
               "homebrew/homebrew-cask" = homebrew-cask;
               "homebrew/homebrew-bundle" = homebrew-bundle;
+            } // lib.optionalAttrs (!isWork) {
               "xykong/homebrew-tap" = xykongTap;
             };
             trust = {
               formulae = [];
-              casks = [ "xykong/tap/flux-markdown" ];
+              casks = lib.optionals (!isWork) [ "xykong/tap/flux-markdown" ];
               commands = [];
               taps = [];
             };
