@@ -14,8 +14,10 @@
 
 # Finder is always pinned by macOS as the first Dock item, so the list
 # below starts with the first app after Finder.
+    # NOTE: no Launchpad. Apple removed /System/Applications/Launchpad.app in
+    # macOS 26; listing it leaves a permanent "?" tile that can never resolve.
+    # The bottom-left hot corner (wvous-bl-corner = 11) covers the same need.
     persistent-apps = [
-      "/System/Applications/Launchpad.app"
         "/Applications/Brave Browser.app"
         "/System/Applications/Messages.app"
         "/System/Applications/Reminders.app"

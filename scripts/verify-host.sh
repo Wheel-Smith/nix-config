@@ -131,7 +131,7 @@ dockapps="$(defaults read com.apple.dock persistent-apps 2>/dev/null \
   | command grep -o '"_CFURLString" = "[^"]*"' | command sed 's/.*= "\(.*\)"/\1/')"
 dockcount="$(printf '%s\n' "$dockapps" | command grep -c '\.app')"
 if [ "$HOST" = "work" ]; then
-  expect "dock item count" "10" "$dockcount"
+  expect "dock item count" "9" "$dockcount"
   printf '%s' "$dockapps" | command grep -q "Microsoft Teams" \
     && ok "Teams pinned (MDM-installed, referenced not managed)" \
     || no "Teams pinned" "not in dock"
@@ -139,7 +139,7 @@ if [ "$HOST" = "work" ]; then
     && no "no personal apps in dock" "Proton Mail present" \
     || ok "no personal apps in dock"
 else
-  expect "dock item count" "14" "$dockcount"
+  expect "dock item count" "13" "$dockcount"
 fi
 
 # ---------------------------------------------------------------------------

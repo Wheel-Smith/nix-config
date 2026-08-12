@@ -5,7 +5,11 @@
     enableZshIntegration = true;
     settings = {
       add_newline = true;
-      command_timeout = 200;
+      # Starship's own default is 500ms; 200 was too tight and made `git` time
+      # out on every prompt ("Executing command ... timed out"), which silently
+      # blanks the git_branch/git_status segments. It gets worse where an
+      # endpoint security agent scans each exec, so leave generous headroom.
+      command_timeout = 1000;
       format = "[$directory$git_branch$git_status]($style)$character";
 
       character = {
