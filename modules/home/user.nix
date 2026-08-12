@@ -15,6 +15,7 @@
     ./devtools.nix
     ./files.nix
     ./links.nix
+    ./wallpaper.nix
   ];
 
   home = {
