@@ -12,19 +12,26 @@
 # which runs under launchd and cannot show an approval prompt. desktoppr calls
 # NSWorkspace.setDesktopImageURL directly, which needs no such permission.
 let
-  source = ../../thinknix-dark.svg;
+  # To switch wallpaper, drop an SVG into ../../wallpapers/ and change this one
+  # name. Nothing else here needs touching.
+  name = "thinknix-dark";
 
-  # The SVG is 4096x4096. Rendering at native size keeps it crisp on Retina;
-  # the pattern tiles, so cropping to a 16:10 display is unnoticeable.
-  wallpaper = pkgs.runCommand "thinknix-dark-wallpaper.png"
+  # Rendered at 4096x4096 — the source SVG's native size, which keeps it crisp
+  # on Retina. Square art on a 16:10 display gets cropped top and bottom by
+  # macOS; unnoticeable for a tiling pattern with a centred logo.
+  size = 4096;
+
+  source = ../../wallpapers + "/${name}.svg";
+
+  wallpaper = pkgs.runCommand "${name}-wallpaper.png"
     { nativeBuildInputs = [ pkgs.resvg ]; }
     ''
-      resvg --width 4096 --height 4096 ${source} "$out"
+      resvg --width ${toString size} --height ${toString size} ${source} "$out"
     '';
 
   # A stable path outside the store: macOS records whatever path it is given,
   # and this one survives rebuilds even as the store path behind it changes.
-  relPath = ".local/share/wallpapers/thinknix-dark.png";
+  relPath = ".local/share/wallpapers/${name}.png";
   absPath = "${config.home.homeDirectory}/${relPath}";
 in
 {

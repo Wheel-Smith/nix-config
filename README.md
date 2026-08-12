@@ -227,6 +227,7 @@ nix-config/
 │   ├── beast/                   # personal: dock, homebrew, packages + firewall/hostname
 │   └── work/                    # work: dock, homebrew, packages (no firewall/hostname)
 ├── scripts/                     # preflight.sh (before switch), verify-host.sh (after)
+├── wallpapers/                  # SVG sources; rasterised at build time (beast only)
 └── modules/
     ├── darwin/                  # default.nix = the set safe on EVERY host
     ├── home/                    # home-manager; gated by isWork where hosts differ
