@@ -110,7 +110,6 @@ firefox|Firefox
 ghostty|Ghostty
 obsidian|Obsidian
 postman|Postman
-slack|Slack
 spotify|Spotify
 utm|UTM
 visual-studio-code|Visual Studio Code

@@ -32,7 +32,7 @@
       "ghostty"
       "obsidian"
       "postman"
-      "slack"
+      # "slack"
       "spotify"
       "utm"
       "visual-studio-code"
