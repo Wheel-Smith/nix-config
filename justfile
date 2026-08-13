@@ -40,9 +40,12 @@ bootstrap-switch:
 # NOTE: edits take effect only after `just switch` — sops-nix materialises the
 # decrypted copy at activation, not when the file is written.
 #
+# sops exits 200 when the editor closes with no change made. That is a normal
+# outcome, not a failure, so it must not surface as a recipe error.
+#
 # Edit an encrypted secret ($EDITOR opens plaintext, re-encrypted on save)
 secrets file="personal":
-    sops secrets/{{file}}.yaml
+    @sops secrets/{{file}}.yaml || test $? -eq 200
 
 # Show what a secret currently decrypts to, without editing it
 secrets-show file="personal":
