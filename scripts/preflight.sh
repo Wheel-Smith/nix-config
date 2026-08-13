@@ -262,6 +262,48 @@ for agent in /Applications/*Defender*.app /Applications/*CrowdStrike*.app \
 done
 
 # ---------------------------------------------------------------------------
+head_ "8. Secrets readiness (sops-nix)"
+# ---------------------------------------------------------------------------
+# The failure this prevents: sops-nix aborts activation when a declared secret
+# cannot be decrypted. If the repo declares secrets and this machine is not yet
+# a recipient, `just switch` dies partway -- profile advanced, home-manager
+# never run. Catching it here costs nothing; catching it mid-switch costs an
+# afternoon.
+repo="$(cd "$(dirname "$0")/.." 2>/dev/null && pwd)"
+if ! ls "$repo"/secrets/*.yaml >/dev/null 2>&1; then
+  ok "no encrypted secrets in the repo yet — nothing to be a recipient of"
+else
+  agekey="$HOME/.config/sops/age/keys.txt"
+  if [ ! -f "$agekey" ]; then
+    stop "repo has encrypted secrets but this machine has no age key"
+    fix "age-keygen -o ~/.config/sops/age/keys.txt"
+    fix "then add its public key to .sops.yaml on another machine and re-encrypt"
+  else
+    perms="$(command stat -f '%OLp' "$agekey" 2>/dev/null)"
+    if [ "$perms" = "600" ]; then
+      ok "age key present with 0600 permissions"
+    else
+      warn "age key permissions are $perms, expected 600"
+      fix "chmod 600 '$agekey'"
+    fi
+
+    # The decisive check: is THIS machine's public key actually a recipient?
+    pub="$(command grep -o 'age1[0-9a-z]*' "$agekey" 2>/dev/null | command head -1)"
+    if [ -z "$pub" ]; then
+      warn "could not read a public key out of $agekey"
+    elif [ ! -f "$repo/.sops.yaml" ]; then
+      stop "no .sops.yaml — encrypted files exist but no recipient policy does"
+    elif command grep -q "$pub" "$repo/.sops.yaml"; then
+      ok "this machine is a recipient in .sops.yaml"
+    else
+      stop "this machine is NOT a recipient — a switch would abort mid-activation"
+      fix "add this key to .sops.yaml, then: sops updatekeys secrets/*.yaml"
+      fix "public key: $pub"
+    fi
+  fi
+fi
+
+# ---------------------------------------------------------------------------
 printf '\n\033[1m%d blockers, %d conflicts to clear\033[0m\n' "$blockers" "$conflicts"
 if [ "$blockers" -gt 0 ]; then
   printf '\033[31mDo not proceed until blockers are resolved.\033[0m\n'
