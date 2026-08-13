@@ -1,4 +1,4 @@
-{ pkgs, ... }:
+{ pkgs, lib, config, isWork, ... }:
 # Secrets tooling. The sops-nix home-manager module itself is wired in
 # modules/home/default.nix; this file owns the CLI side and, later, the secret
 # declarations.
@@ -24,4 +24,27 @@
     ssh-to-age  # not used by the key model above, but the usual first thing
                 # reached for when debugging why a recipient cannot decrypt
   ];
+
+  # keyFile has no default in the home-manager module, so it must be explicit.
+  # pathNotInStore: this is a real path on the machine, never copied to /nix.
+  sops.age.keyFile = "${config.home.homeDirectory}/.config/sops/age/keys.txt";
+
+  # Personal homelab SSH hosts, beast only — the work machine is deliberately
+  # not a recipient of secrets/personal.yaml, so it could not decrypt this even
+  # if it were declared.
+  #
+  # These two Host blocks predate this config and were silently lost when
+  # home-manager took ownership of ~/.ssh/config; they survived only in
+  # ~/.ssh/config.hm-backup until being migrated here.
+  #
+  # Kept as one blob rather than templated: adding a host should be `just
+  # secrets` and nothing else, and the *shape* of an SSH config was never the
+  # part worth hiding.
+  sops.secrets = lib.optionalAttrs (!isWork) {
+    ssh_config = {
+      sopsFile = ../../secrets/personal.yaml;
+      # 0400 — ssh refuses to read an over-permissive included file.
+      mode = "0400";
+    };
+  };
 }

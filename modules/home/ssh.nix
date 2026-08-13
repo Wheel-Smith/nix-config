@@ -1,4 +1,4 @@
-{ lib, isWork, ... }:
+{ lib, config, isWork, ... }:
 {
   programs.ssh = {
     enable = true;
@@ -22,7 +22,14 @@
 # Generate FRESH keys there — do not copy id_ed25519 from beast. A key on a
 # supervised device can be remotely wiped, inspected, or reclaimed, and a
 # separate key is revocable in one click without touching anything personal.
-    includes = lib.optionals isWork [ "~/.ssh/config.local" ];
+#
+# On beast the equivalent is sops-managed rather than hand-created: the personal
+# homelab hosts live encrypted in secrets/personal.yaml and are decrypted to a
+# path under ~/.config/sops-nix at activation. Same reasoning — the hostnames
+# are not something to publish — but with no manual file to forget.
+    includes =
+      lib.optionals isWork [ "~/.ssh/config.local" ]
+      ++ lib.optionals (!isWork) [ config.sops.secrets.ssh_config.path ];
 
 # Manage SSH client behavior, but not private keys. Create/import
 # ~/.ssh/id_ed25519 manually or from your password manager.

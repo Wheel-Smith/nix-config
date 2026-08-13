@@ -1,0 +1,39 @@
+# Which keys can decrypt which files.
+#
+# Public keys only — safe in a public repo. One age identity per machine, held
+# at ~/.config/sops/age/keys.txt on that machine and never copied. Adding a
+# machine means adding its PUBLIC key here and re-encrypting, so no private
+# material ever moves:
+#
+#   sops updatekeys secrets/personal.yaml
+#
+# `recovery` is an offline identity kept only in the password manager, on no
+# machine. It exists so that losing a laptop never means losing the secrets.
+#
+# Rules are path-based so scope can differ per file: work never receives the
+# personal homelab hosts, and a future file holding real credentials can be
+# added with tighter recipients without restructuring anything.
+
+keys:
+  - &beast    age138u4d9jr0c84a6w4jaxxvqlgk2unn53xw6n0xud7xcc5yny5vcxqrfumlz
+  - &recovery age1984am5z532jc06ddsscev936jsu32wlerpaxdd7jsp0tswfavgqqs7r3jl
+  # Added once the work Mac runs `age-keygen -o ~/.config/sops/age/keys.txt`:
+  # - &work   age1...
+
+creation_rules:
+  # Personal homelab SSH hosts. Deliberately NOT readable by the work machine.
+  - path_regex: secrets/personal\.yaml$
+    key_groups:
+      - age:
+          - *beast
+          - *recovery
+
+  # Work git identity and internal SSH hosts. beast is a recipient so secrets
+  # can be edited on the machine this config is authored on; the work host is
+  # added here when it exists.
+  - path_regex: secrets/work\.yaml$
+    key_groups:
+      - age:
+          - *beast
+          - *recovery
+          # - *work
