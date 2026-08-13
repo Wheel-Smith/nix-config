@@ -27,13 +27,27 @@
         };
       };
 
-      git.paging = {
-        colorArg = "always";
-        # lazygit passes --no-ext-diff, so it deliberately bypasses the
-        # diff.external set in git.nix. Point it at difftastic explicitly to get
-        # the same structural diffs here as in `git diff`.
-        externalDiffCommand = "${pkgs.difftastic}/bin/difft --color=always --display=inline";
-      };
+      # lazygit passes --no-ext-diff, so it deliberately bypasses the
+      # diff.external set in git.nix. Point it at difftastic explicitly to get
+      # the same structural diffs here as in `git diff`.
+      #
+      # Schema note: this was `git.paging.externalDiffCommand` until lazygit
+      # renamed it — paging became the diffRenderers array, and the command
+      # gained an explicit type. lazygit normally migrates old configs itself on
+      # startup, but it CANNOT here: the file is a read-only symlink into the
+      # Nix store, so it fails with "permission denied" and refuses to run.
+      #
+      # That is the cost of managing an app's config declaratively — upstream
+      # schema changes become our problem. To find the new shape, copy the
+      # generated config somewhere writable and start lazygit against it with
+      # --use-config-file; it rewrites the file in place and shows the diff.
+      git.diffRenderers = [
+        {
+          type = "extDiff";
+          command = "${pkgs.difftastic}/bin/difft --color=always --display=inline";
+          colorArg = "always";
+        }
+      ];
 
       os.editPreset = "nvim";
     };
