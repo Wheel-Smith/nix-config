@@ -15,6 +15,7 @@
     ./devtools.nix
     ./files.nix
     ./links.nix
+    ./bat.nix
     ./btop.nix
     ./wallpaper.nix
     ./secrets.nix

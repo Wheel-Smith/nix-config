@@ -1,4 +1,4 @@
-{ lib, isWork, ... }:
+{ pkgs, lib, isWork, ... }:
 let
   personalIdentity = {
     name = "rattatui";
@@ -66,6 +66,17 @@ in
 
       core = {
         editor = "nvim";
+      };
+
+# Use difftastic for `git diff`, `git show` and `git log -p`. The zsh alias
+# `diff = difft` only ever covered the standalone command, so the structural
+# diff was missing from where diffs are actually read.
+#
+# Safe alongside lazygit: it passes --no-ext-diff, so it still gets plain
+# unified output to parse. Same escape hatch by hand when a script needs it:
+#   git --no-ext-diff diff
+      diff = {
+        external = "${pkgs.difftastic}/bin/difft";
       };
     };
   };

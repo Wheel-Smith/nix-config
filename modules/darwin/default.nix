@@ -23,5 +23,6 @@
     ./aerospace.nix
     ./security.nix
     ./fonts.nix
+    ./gc.nix
   ];
 }
