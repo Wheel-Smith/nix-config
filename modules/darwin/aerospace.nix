@@ -10,7 +10,7 @@ let
     { "if"."app-id" = "com.brave.Browser"; run = "move-node-to-workspace 1"; }
     { "if"."app-id" = "md.obsidian"; run = "move-node-to-workspace 2"; }
     { "if"."app-id" = "com.mitchellh.ghostty"; run = "move-node-to-workspace 3"; }
-    { "if"."app-id" = "com.spotify.client"; run = "move-node-to-workspace 4"; }
+    { "if"."app-id" = "com.spotify.client"; run = "move-node-to-workspace 6"; }
     { "if"."app-id" = "com.microsoft.VSCode"; run = "move-node-to-workspace C"; }
     { "if"."app-id" = "org.jkiss.dbeaver.core.product"; run = "move-node-to-workspace D"; }
     # Slack is a cask on beast but admin-deployed on work, so it is installed on
@@ -20,7 +20,6 @@ let
   ];
 
   personalWindowRules = [
-    { "if"."app-id" = "ai.perplexity.mac"; run = "move-node-to-workspace 2"; }
     { "if"."app-id" = "com.apple.MobileSMS"; run = "move-node-to-workspace 4"; }
     { "if"."app-id" = "net.whatsapp.WhatsApp"; run = "move-node-to-workspace 4"; }
     { "if"."app-id" = "ch.protonmail.desktop"; run = "move-node-to-workspace 5"; }
