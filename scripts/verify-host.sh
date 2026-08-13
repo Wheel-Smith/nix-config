@@ -18,11 +18,14 @@ if [ -z "$HOST" ]; then
   esac
 fi
 
-pass=0; fail=0; skip=0
+pass=0; fail=0; skip=0; warns=0
 
 ok()   { printf '  \033[32mPASS\033[0m  %s\n' "$1"; pass=$((pass + 1)); }
 no()   { printf '  \033[31mFAIL\033[0m  %s\n' "$1"; [ $# -gt 1 ] && printf '        got: %s\n' "$2"; fail=$((fail + 1)); }
 sk()   { printf '  \033[33mSKIP\033[0m  %s\n' "$1"; skip=$((skip + 1)); }
+# WARN is for things that are legitimately environment-dependent — a stale shell
+# is a real condition, not a broken config — so they must never fail the run.
+warn() { printf '  \033[33mWARN\033[0m  %s\n' "$1"; [ $# -gt 1 ] && printf '        %s\n' "$2"; warns=$((warns + 1)); }
 info() { printf '  \033[36mINFO\033[0m  %s\n' "$1"; }
 head_() { printf '\n\033[1m%s\033[0m\n' "$1"; }
 
@@ -41,6 +44,31 @@ present() {
 }
 
 printf '\033[1mVerifying host: %s  (user: %s)\033[0m\n' "$HOST" "$(id -un)"
+
+# ---------------------------------------------------------------------------
+head_ "Did the last switch actually finish?"
+# ---------------------------------------------------------------------------
+# This runs FIRST because a part-applied switch makes every check below
+# meaningless — they would be measuring an older generation.
+#
+# The activation script sets the system profile early but only updates
+# /run/current-system as its LAST step, after Homebrew and home-manager. So if
+# `brew bundle` exits non-zero, the profile advances while /run/current-system
+# does not, and the two disagree. That is the signature of an aborted switch,
+# and it is otherwise invisible: your shell, your dotfiles and your packages all
+# silently stay on the previous generation.
+current="$(readlink /run/current-system 2>/dev/null)"
+profile="$(readlink -f /nix/var/nix/profiles/system 2>/dev/null)"
+if [ -z "$current" ] || [ -z "$profile" ]; then
+  no "switch completed" "could not read /run/current-system or the system profile"
+elif [ "$current" = "$profile" ]; then
+  ok "switch completed (generation fully applied)"
+else
+  no "switch completed" "PART-APPLIED — profile advanced but activation aborted"
+  printf '        profile:        %s\n' "$profile"
+  printf '        current-system: %s\n' "$current"
+  printf '        \033[33mre-run the switch and read the Homebrew step closely\033[0m\n'
+fi
 
 # ---------------------------------------------------------------------------
 head_ "Identity"
@@ -162,9 +190,56 @@ if command -v brew >/dev/null 2>&1; then
   else
     info "beast casks: $(printf '%s' "$casks" | command wc -w | command tr -d ' ')"
   fi
+
+  # `brew bundle check` against the generated Brewfile is what actually catches
+  # the failure that aborts a switch, at its source rather than via symptoms:
+  # a brew runtime older than the homebrew-core input cannot parse newer
+  # formulae, and anything depending on one becomes unsatisfiable.
+  #
+  # Must run with XDG_CONFIG_HOME cleared. nix-homebrew writes tap trust under
+  # sudo with the environment scrubbed, so it lands in ~/.homebrew/trust.json;
+  # an interactive shell that sets XDG_CONFIG_HOME looks in
+  # ~/.config/homebrew/trust.json instead and wrongly reports untrusted taps.
+  brewfile="$(command grep -o "\-\-file='[^']*'" "$(readlink /run/current-system)/activate" 2>/dev/null \
+    | command head -1 | command sed "s/--file='//;s/'//")"
+  if [ -n "$brewfile" ] && [ -f "$brewfile" ]; then
+    if bundle_out="$(env -u XDG_CONFIG_HOME brew bundle check --file="$brewfile" 2>&1)"; then
+      ok "brew bundle satisfied"
+    else
+      no "brew bundle satisfied" "$(printf '%s' "$bundle_out" | command grep -vE '^Warning: (Skipping|.*is unreadable)' | command head -3 | command tr '\n' ' ')"
+    fi
+    unreadable="$(printf '%s' "$bundle_out" | command grep -c 'is unreadable' || true)"
+    if [ "${unreadable:-0}" -gt 0 ]; then
+      no "all formulae parseable by this brew runtime" \
+        "$unreadable unreadable — bump inputs.brew-src.url in flake.nix"
+    else
+      ok "all formulae parseable by this brew runtime"
+    fi
+  else
+    sk "could not locate the generated Brewfile"
+  fi
 else
   sk "brew not on PATH — open a new shell after the first switch"
 fi
+
+# ---------------------------------------------------------------------------
+head_ "Environment freshness (warnings only)"
+# ---------------------------------------------------------------------------
+# home.sessionVariables land in a once-guarded hm-session-vars.sh, so a shell
+# that inherited __HM_SESS_VARS_SOURCED=1 from before a switch never picks up
+# newly added variables. Long-lived processes — a login session, a tmux server —
+# keep the stale snapshot indefinitely.
+#
+# These are WARNs by design: failing here would mean "you are reading this in an
+# old shell", which is not a broken configuration.
+for v in MANROFFOPT MANPAGER EDITOR; do
+  if [ -n "$(eval "printf '%s' \"\${$v-}\"")" ]; then
+    ok "$v is set in this environment"
+  else
+    warn "$v is not set in this shell" \
+      "config may be fine — open a new login shell, or 'tmux kill-server' if in tmux"
+  fi
+done
 
 # ---------------------------------------------------------------------------
 head_ "Containers"
@@ -263,5 +338,42 @@ expect "telemetry off" "off" \
   "$(command grep -o '"telemetry.telemetryLevel": *"[^"]*"' "$HOME/Library/Application Support/Code/User/settings.json" 2>/dev/null | command sed 's/.*"\(.*\)"/\1/')"
 
 # ---------------------------------------------------------------------------
-printf '\n\033[1m%d passed, %d failed, %d skipped\033[0m\n' "$pass" "$fail" "$skip"
+head_ "Secrets (sops-nix)"
+# ---------------------------------------------------------------------------
+# Deliberately SKIPs rather than FAILs when sops is not yet set up on this host.
+# There is a migration window where the repo carries encrypted secrets but a
+# given machine is not yet a recipient, and crying wolf through that window
+# would train you to ignore this script.
+repo_root="$(cd "$(dirname "$0")/.." 2>/dev/null && pwd)"
+if ! ls "$repo_root"/secrets/*.yaml >/dev/null 2>&1; then
+  sk "no encrypted secrets in the repo yet"
+elif [ "$HOST" != "work" ]; then
+  sk "no secrets declared for this host (module is inert here)"
+else
+  agekey="$HOME/.config/sops/age/keys.txt"
+  if [ ! -f "$agekey" ]; then
+    sk "no age key at ~/.config/sops/age/keys.txt — this host is not a recipient yet"
+  else
+    secdir="$HOME/.config/sops-nix/secrets"
+    if [ -d "$secdir" ] && [ -n "$(ls -A "$secdir" 2>/dev/null)" ]; then
+      ok "sops secrets decrypted ($(ls -A "$secdir" | command wc -l | command tr -d ' ') entries)"
+    else
+      no "sops secrets decrypted" "$secdir is empty or missing"
+    fi
+    # An include pointing at a path that does not exist is silently ignored by
+    # git, so a broken secret would otherwise show up as a wrong commit author
+    # rather than an error.
+    inc="$(git config --get-all include.path 2>/dev/null | command grep sops || true)"
+    if [ -n "$inc" ]; then
+      [ -f "$inc" ] && ok "git include resolves to a decrypted secret" \
+                    || no "git include resolves" "$inc does not exist"
+    else
+      sk "git not yet wired to a sops path"
+    fi
+  fi
+fi
+
+# ---------------------------------------------------------------------------
+printf '\n\033[1m%d passed, %d failed, %d skipped, %d warnings\033[0m\n' \
+  "$pass" "$fail" "$skip" "$warns"
 [ "$fail" -eq 0 ]

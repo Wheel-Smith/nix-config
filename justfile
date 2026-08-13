@@ -21,9 +21,17 @@ build:
 diff:
     nix store diff-closures /run/current-system ./result
 
-# Apply the configuration
+# Apply the configuration, then confirm the activation actually finished.
+#
+# The drift check is two symlink reads, so it cannot produce a false positive.
+# It exists because activation sets the system profile early but updates
+# /run/current-system as its very last step: if a step in between fails (most
+# likely `brew bundle`), the two disagree and the switch has silently applied
+# only part of itself. That state is otherwise invisible until something
+# downstream looks stale days later.
 switch:
     sudo darwin-rebuild switch --flake .#{{host}}
+    @./scripts/switch-applied.sh
 
 # First-ever activation on a fresh machine (darwin-rebuild not on PATH yet)
 bootstrap-switch:
