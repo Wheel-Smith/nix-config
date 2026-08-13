@@ -2,7 +2,6 @@
 let
   common = with pkgs; [
     bat
-    btop
     curl
     # difftastic + ripgrep back the `diff` and `grep` aliases in zsh.nix. Both
     # were aliased but never declared, so on a clean machine those aliases just

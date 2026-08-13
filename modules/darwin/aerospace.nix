@@ -3,33 +3,36 @@
 # Only the app -> workspace rules differ, since the two machines run different
 # apps.
 let
-  personalWindowRules = [
+  # Apps that live on both machines get one rule, not two copies to drift apart.
+  # A rule for an app that is not installed is a harmless no-op, so this stays
+  # shared even where the app is only on one host.
+  sharedWindowRules = [
     { "if"."app-id" = "com.brave.Browser"; run = "move-node-to-workspace 1"; }
     { "if"."app-id" = "md.obsidian"; run = "move-node-to-workspace 2"; }
-    { "if"."app-id" = "ai.perplexity.mac"; run = "move-node-to-workspace 2"; }
     { "if"."app-id" = "com.mitchellh.ghostty"; run = "move-node-to-workspace 3"; }
+    { "if"."app-id" = "com.spotify.client"; run = "move-node-to-workspace 4"; }
+    { "if"."app-id" = "com.microsoft.VSCode"; run = "move-node-to-workspace C"; }
+    { "if"."app-id" = "org.jkiss.dbeaver.core.product"; run = "move-node-to-workspace D"; }
+    { "if"."app-id" = "com.anthropic.claudefordesktop"; run = "move-node-to-workspace V"; }
+  ];
+
+  personalWindowRules = [
+    { "if"."app-id" = "ai.perplexity.mac"; run = "move-node-to-workspace 2"; }
     { "if"."app-id" = "com.apple.MobileSMS"; run = "move-node-to-workspace 4"; }
     { "if"."app-id" = "net.whatsapp.WhatsApp"; run = "move-node-to-workspace 4"; }
-    { "if"."app-id" = "com.spotify.client"; run = "move-node-to-workspace 4"; }
     { "if"."app-id" = "ch.protonmail.desktop"; run = "move-node-to-workspace 5"; }
     { "if"."app-id" = "com.hnc.Discord"; run = "move-node-to-workspace 6"; }
     { "if"."app-id" = "ru.keepcoder.Telegram"; run = "move-node-to-workspace T"; }
-    { "if"."app-id" = "com.microsoft.VSCode"; run = "move-node-to-workspace C"; }
   ];
 
   # The chat client ships under a new bundle id since its 2023 rewrite; the old
   # id is kept so the rule survives either build. Both corporate apps are
   # MDM-deployed, not in our Homebrew list.
   workWindowRules = [
-    { "if"."app-id" = "com.brave.Browser"; run = "move-node-to-workspace 1"; }
-    { "if"."app-id" = "md.obsidian"; run = "move-node-to-workspace 2"; }
-    { "if"."app-id" = "com.mitchellh.ghostty"; run = "move-node-to-workspace 3"; }
     { "if"."app-id" = "com.microsoft.teams2"; run = "move-node-to-workspace 4"; }
     { "if"."app-id" = "com.microsoft.teams"; run = "move-node-to-workspace 4"; }
-    { "if"."app-id" = "com.spotify.client"; run = "move-node-to-workspace 4"; }
     { "if"."app-id" = "com.microsoft.Outlook"; run = "move-node-to-workspace 5"; }
     { "if"."app-id" = "com.tinyspeck.slackmacgap"; run = "move-node-to-workspace S"; }
-    { "if"."app-id" = "com.microsoft.VSCode"; run = "move-node-to-workspace C"; }
   ];
 in
 {
@@ -178,7 +181,8 @@ in
       };
 
       "on-window-detected" =
-        if isWork then workWindowRules else personalWindowRules;
+        sharedWindowRules
+        ++ (if isWork then workWindowRules else personalWindowRules);
     };
   };
 }
