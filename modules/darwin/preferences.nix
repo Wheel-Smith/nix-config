@@ -41,11 +41,8 @@
       "com.apple.trackpad.scaling" = 2.0;
     };
 
-# NEW: Trackpad tap-to-click ("touch to click, not click to click").
-    trackpad = {
-      Clicking = true;                 # tap to click
-      TrackpadThreeFingerDrag = true;  # optional: drag windows with 3 fingers
-    };
+# Trackpad settings live in trackpad.nix, which owns them outright. They were
+# duplicated here, so the two files could disagree about the same key.
 
     dock = {
 # NEW: kill Dock animations.
