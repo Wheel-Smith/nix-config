@@ -16,6 +16,7 @@
     ./files.nix
     ./links.nix
     ./wallpaper.nix
+    ./secrets.nix
   ];
 
   home = {

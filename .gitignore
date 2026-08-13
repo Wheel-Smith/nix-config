@@ -3,5 +3,13 @@ result-*
 .DS_Store
 .direnv
 *.backup
+
+# Everything under secrets/ is ignored by default, so a stray plaintext file
+# cannot be committed by accident. The exceptions are the things that are safe
+# in public: the sops policy, encrypted payloads, and the README.
+#
+# Encrypted files MUST be tracked — Nix flakes only copy git-tracked files into
+# the store, so an untracked secret is invisible to `nix build`.
 secrets/*
 !secrets/README.md
+!secrets/*.yaml
