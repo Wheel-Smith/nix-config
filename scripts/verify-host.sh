@@ -345,31 +345,49 @@ head_ "Secrets (sops-nix)"
 # given machine is not yet a recipient, and crying wolf through that window
 # would train you to ignore this script.
 repo_root="$(cd "$(dirname "$0")/.." 2>/dev/null && pwd)"
+secdir="$HOME/.config/sops-nix/secrets"
+agekey="$HOME/.config/sops/age/keys.txt"
+
 if ! ls "$repo_root"/secrets/*.yaml >/dev/null 2>&1; then
   sk "no encrypted secrets in the repo yet"
-elif [ "$HOST" != "work" ]; then
-  sk "no secrets declared for this host (module is inert here)"
+elif [ ! -f "$agekey" ]; then
+  sk "no age key here — this host is not a recipient yet"
 else
-  agekey="$HOME/.config/sops/age/keys.txt"
-  if [ ! -f "$agekey" ]; then
-    sk "no age key at ~/.config/sops/age/keys.txt — this host is not a recipient yet"
+  # Host-agnostic: both hosts hold secrets now (beast the personal SSH hosts,
+  # work the git identity and internal hosts), so key off what was actually
+  # materialised rather than off the hostname.
+  if [ -d "$secdir" ] && [ -n "$(ls -A "$secdir" 2>/dev/null)" ]; then
+    ok "sops secrets decrypted ($(ls -A "$secdir" | command wc -l | command tr -d ' ') entries)"
+    # 0400 matters: ssh refuses to read an over-permissive included file, and
+    # would silently ignore the include rather than error.
+    badperm=0
+    for f in "$secdir"/*; do
+      [ -f "$f" ] || continue
+      [ "$(command stat -f '%OLp' "$f" 2>/dev/null)" = "400" ] || badperm=$((badperm + 1))
+    done
+    [ "$badperm" -eq 0 ] && ok "decrypted secrets are 0400" \
+                         || no "decrypted secrets are 0400" "$badperm file(s) with wrong mode"
   else
-    secdir="$HOME/.config/sops-nix/secrets"
-    if [ -d "$secdir" ] && [ -n "$(ls -A "$secdir" 2>/dev/null)" ]; then
-      ok "sops secrets decrypted ($(ls -A "$secdir" | command wc -l | command tr -d ' ') entries)"
-    else
-      no "sops secrets decrypted" "$secdir is empty or missing"
-    fi
-    # An include pointing at a path that does not exist is silently ignored by
-    # git, so a broken secret would otherwise show up as a wrong commit author
-    # rather than an error.
-    inc="$(git config --get-all include.path 2>/dev/null | command grep sops || true)"
-    if [ -n "$inc" ]; then
-      [ -f "$inc" ] && ok "git include resolves to a decrypted secret" \
-                    || no "git include resolves" "$inc does not exist"
-    else
-      sk "git not yet wired to a sops path"
-    fi
+    no "sops secrets decrypted" "$secdir is empty or missing"
+  fi
+
+  # An include pointing at a nonexistent path is silently ignored by both ssh
+  # and git, so a broken secret shows up as wrong behaviour rather than an
+  # error. Assert the target actually exists.
+  sshinc="$(command grep -E '^Include .*sops' "$HOME/.ssh/config" 2>/dev/null | command awk '{print $2}')"
+  if [ -n "$sshinc" ]; then
+    [ -f "$sshinc" ] && ok "ssh include resolves to a decrypted secret" \
+                     || no "ssh include resolves" "$sshinc does not exist"
+  else
+    sk "ssh not wired to a sops path on this host"
+  fi
+
+  gitinc="$(git config --get-all include.path 2>/dev/null | command grep sops || true)"
+  if [ -n "$gitinc" ]; then
+    [ -f "$gitinc" ] && ok "git include resolves to a decrypted secret" \
+                     || no "git include resolves" "$gitinc does not exist"
+  else
+    sk "git not wired to a sops path on this host"
   fi
 fi
 
