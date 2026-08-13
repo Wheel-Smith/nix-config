@@ -12,13 +12,11 @@ let
     fd
     ffmpeg
     fzf
-    gh
     git
     imagemagick
     jq
     just
     lazydocker
-    lazygit
     nil
     nixfmt
     pandoc

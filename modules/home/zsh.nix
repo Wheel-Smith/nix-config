@@ -10,7 +10,8 @@
   ];
 
   home.sessionVariables = {
-    XDG_CONFIG_HOME = "$HOME/.config";
+    # XDG_CONFIG_HOME is provided by xdg.enable in user.nix. Setting it here as
+    # well would be a conflicting definition of the same option.
     HISTIGNORE = "pwd:ls:cd";
     MANROFFOPT = "-c";
     MANPAGER = "sh -c 'col -bx | bat -l man -p'";
