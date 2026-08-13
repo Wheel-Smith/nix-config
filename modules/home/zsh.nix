@@ -1,4 +1,4 @@
-{ lib, ... }:
+{ lib, config, ... }:
 {
   home.sessionPath = [
     "/opt/homebrew/opt/curl/bin"
@@ -26,6 +26,16 @@
 
   programs.zsh = {
     enable = true;
+
+# Pinned to the legacy location on purpose. Home Manager currently defaults to
+# the home directory only because home.stateVersion is below 26.05; once that is
+# bumped the default flips to $XDG_CONFIG_HOME/zsh and the dotfiles move.
+#
+# Stating it explicitly means the stateVersion bump becomes a boring change
+# rather than one that silently relocates ~/.zshrc and ~/.zshenv. Moving to XDG
+# is a fine thing to do later — deliberately, on its own, not as a side effect —
+# by setting this to "${config.xdg.configHome}/zsh".
+    dotDir = config.home.homeDirectory;
     autosuggestion.enable = true;
     syntaxHighlighting.enable = true;
     enableCompletion = true;
