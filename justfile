@@ -37,6 +37,21 @@ switch:
 bootstrap-switch:
     sudo nix run nix-darwin -- switch --flake .#{{host}}
 
+# NOTE: edits take effect only after `just switch` — sops-nix materialises the
+# decrypted copy at activation, not when the file is written.
+#
+# Edit an encrypted secret ($EDITOR opens plaintext, re-encrypted on save)
+secrets file="personal":
+    sops secrets/{{file}}.yaml
+
+# Show what a secret currently decrypts to, without editing it
+secrets-show file="personal":
+    @sops --decrypt secrets/{{file}}.yaml
+
+# Show which keys can decrypt a secret
+secrets-keys file="personal":
+    @grep -A1 'recipient:' secrets/{{file}}.yaml | grep -o 'age1[0-9a-z]*'
+
 # Check for collisions BEFORE the first switch on a machine that isn't fresh
 preflight:
     ./scripts/preflight.sh {{host}}
