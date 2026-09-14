@@ -75,14 +75,18 @@ update:
 update-input input:
     nix flake update {{input}}
 
-# Update Homebrew itself and upgrade installed formulae/casks
+# Upgrade installed formulae/casks. Do NOT run `brew update` here: nix-homebrew
+# pins taps as read-only /nix/store paths (mutableTaps = false), so `brew
+# update`'s `git pull` fails with "Permission denied". The taps only move
+# forward via `just update` (bumps the homebrew-core/-cask flake inputs) +
+# `just switch` (nix-homebrew relinks the taps to those new commits) — run
+# this recipe after switch so brew sees the freshly relinked taps.
 brew-upgrade:
-    brew update
     brew upgrade
     brew upgrade --cask
 
-# Update everything: flake inputs, brew packages, then switch
-upgrade: update brew-upgrade switch
+# Update everything: flake inputs, switch (which relinks brew taps), then upgrade brew packages
+upgrade: update switch brew-upgrade
 
 # Format all Nix files (requires nixpkgs-fmt / alejandra in your packages)
 fmt:
