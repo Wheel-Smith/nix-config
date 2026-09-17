@@ -13,6 +13,7 @@
       "lazyssh"
       "mole"
       # "opencode"
+      "powershell"
     ];
 
     casks = [

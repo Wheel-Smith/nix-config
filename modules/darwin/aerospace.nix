@@ -10,13 +10,13 @@ let
     { "if"."app-id" = "com.brave.Browser"; run = "move-node-to-workspace 1"; }
     { "if"."app-id" = "md.obsidian"; run = "move-node-to-workspace 2"; }
     { "if"."app-id" = "com.mitchellh.ghostty"; run = "move-node-to-workspace 3"; }
-    { "if"."app-id" = "com.spotify.client"; run = "move-node-to-workspace 6"; }
+    { "if"."app-id" = "com.spotify.client"; run = "move-node-to-workspace M"; }
     { "if"."app-id" = "com.microsoft.VSCode"; run = "move-node-to-workspace C"; }
     { "if"."app-id" = "org.jkiss.dbeaver.core.product"; run = "move-node-to-workspace D"; }
     # Slack is a cask on beast but admin-deployed on work, so it is installed on
     # both even though only one host's homebrew list mentions it.
     { "if"."app-id" = "com.tinyspeck.slackmacgap"; run = "move-node-to-workspace S"; }
-    { "if"."app-id" = "com.anthropic.claudefordesktop"; run = "move-node-to-workspace V"; }
+    { "if"."app-id" = "com.anthropic.claudefordesktop"; run = "move-node-to-workspace C"; }
   ];
 
   personalWindowRules = [
@@ -24,8 +24,10 @@ let
     { "if"."app-id" = "net.whatsapp.WhatsApp"; run = "move-node-to-workspace 4"; }
     { "if"."app-id" = "ch.protonmail.desktop"; run = "move-node-to-workspace 5"; }
     { "if"."app-id" = "com.hnc.Discord"; run = "move-node-to-workspace 6"; }
+    { "if"."app-id" = "app.legcord.Legcord"; run = "move-node-to-workspace 6"; }
     # OrbStack is beast-only — the work host uses Colima, which has no GUI.
     { "if"."app-id" = "dev.kdrag0n.MacVirt"; run = "move-node-to-workspace O"; }
+    { "if"."app-id" = "com.apple.reminders"; run = "move-node-to-workspace R"; }
     { "if"."app-id" = "ru.keepcoder.Telegram"; run = "move-node-to-workspace T"; }
   ];
 
@@ -125,10 +127,10 @@ in
             "alt-c" = "workspace C";
             "alt-d" = "workspace D";
             "alt-e" = "workspace E";
-            "alt-f" = "workspace F";
             "alt-g" = "workspace G";
             "alt-i" = "workspace I";
             "alt-n" = "workspace N";
+            "alt-m" = "workspace M";
             "alt-o" = "workspace O";
             "alt-p" = "workspace P";
             "alt-q" = "workspace Q";
@@ -161,6 +163,7 @@ in
             "alt-shift-g" = "move-node-to-workspace G";
             "alt-shift-i" = "move-node-to-workspace I";
             "alt-shift-n" = "move-node-to-workspace N";
+            "alt-shift-m" = "move-node-to-workspace M";
             "alt-shift-o" = "move-node-to-workspace O";
             "alt-shift-p" = "move-node-to-workspace P";
             "alt-shift-q" = "move-node-to-workspace Q";
@@ -206,4 +209,3 @@ in
     };
   };
 }
-
