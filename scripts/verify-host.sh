@@ -371,15 +371,18 @@ else
     no "sops secrets decrypted" "$secdir is empty or missing"
   fi
 
-  # An include pointing at a nonexistent path is silently ignored by both ssh
-  # and git, so a broken secret shows up as wrong behaviour rather than an
-  # error. Assert the target actually exists.
-  sshinc="$(command grep -E '^Include .*sops' "$HOME/.ssh/config" 2>/dev/null | command awk '{print $2}')"
-  if [ -n "$sshinc" ]; then
-    [ -f "$sshinc" ] && ok "ssh include resolves to a decrypted secret" \
-                     || no "ssh include resolves" "$sshinc does not exist"
+  # On beast, sops-nix renders the whole SSH config so LazySSH can discover
+  # personal hosts; it must not be a Nix-store symlink or be group-readable.
+  # Work keeps its hand-created local include (checked in the SSH section).
+  if [ "$HOST" != "work" ]; then
+    if [ -f "$HOME/.ssh/config" ] && [ ! -L "$HOME/.ssh/config" ] \
+       && [ "$(command stat -f '%OLp' "$HOME/.ssh/config" 2>/dev/null)" = "600" ]; then
+      ok "ssh config rendered by sops-nix (0600)"
+    else
+      no "ssh config rendered by sops-nix (0600)" "missing, symlinked, or wrong permissions"
+    fi
   else
-    sk "ssh not wired to a sops path on this host"
+    sk "personal ssh config template (work host)"
   fi
 
   gitinc="$(git config --get-all include.path 2>/dev/null | command grep sops || true)"

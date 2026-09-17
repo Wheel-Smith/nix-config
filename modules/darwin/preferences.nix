@@ -27,6 +27,8 @@
       NSAutomaticWindowAnimationsEnabled = false;
       NSScrollAnimationEnabled = false;
       NSWindowResizeTime = 1.0e-3; # NEW: near-instant window resize
+      # Hold Ctrl+Cmd and drag anywhere in a window to move it.
+      NSWindowShouldDragOnGesture = true;
 
 # Disable automatic text substitutions/corrections.
       NSAutomaticCapitalizationEnabled = false;

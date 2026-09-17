@@ -37,14 +37,36 @@
   # home-manager took ownership of ~/.ssh/config; they survived only in
   # ~/.ssh/config.hm-backup until being migrated here.
   #
-  # Kept as one blob rather than templated: adding a host should be `just
-  # secrets` and nothing else, and the *shape* of an SSH config was never the
-  # part worth hiding.
+  # Kept as one encrypted blob: adding a host changes only personal.yaml, while
+  # the runtime template below supplies the shared non-secret SSH defaults.
   sops.secrets = lib.optionalAttrs (!isWork) {
     ssh_config = {
       sopsFile = ../../secrets/personal.yaml;
-      # 0400 — ssh refuses to read an over-permissive included file.
+      # Template input; keep the separately materialised payload private too.
       mode = "0400";
+    };
+  };
+
+  # LazySSH reads ~/.ssh/config itself but does not follow OpenSSH Include
+  # directives. Render one ordinary config file at activation so it sees the
+  # encrypted personal hosts, while only a SOPS placeholder is stored in Nix.
+  sops.templates = lib.optionalAttrs (!isWork) {
+    ssh_config = {
+      path = "${config.home.homeDirectory}/.ssh/config";
+      mode = "0600";
+      content = ''
+        ${config.sops.placeholder.ssh_config}
+
+        # Git-only host configuration lives in a separate Include so LazySSH
+        # does not present github.com as an interactive server.
+        Include ~/.ssh/config.git
+
+        Host *
+          AddKeysToAgent yes
+          ForwardAgent no
+          ServerAliveCountMax 3
+          ServerAliveInterval 60
+      '';
     };
   };
 }

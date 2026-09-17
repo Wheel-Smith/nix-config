@@ -1,6 +1,24 @@
-{ lib, config, isWork, ... }:
+{ lib, isWork, ... }:
 {
-  programs.ssh = {
+  # Keep GitHub's SSH transport settings out of LazySSH's server list. OpenSSH
+  # follows this include, while LazySSH only displays top-level Host blocks.
+  home.file = lib.optionalAttrs (!isWork) {
+    ".ssh/config.git".text = ''
+      Host github.com
+        AddKeysToAgent yes
+        HostName github.com
+        IdentitiesOnly yes
+        IdentityFile ~/.ssh/id_ed25519
+        UseKeychain yes
+        User git
+    '';
+  };
+
+  # On beast, secrets.nix renders the complete ~/.ssh/config at activation so
+  # LazySSH can discover encrypted hosts. Its parser does not follow Include
+  # directives. The work Mac has no personal secret payload, so Home Manager
+  # continues to manage its non-secret config and local include directly.
+  programs.ssh = lib.mkIf isWork {
     enable = true;
 
 # Avoid relying on Home Manager's deprecated implicit SSH defaults.
@@ -23,13 +41,7 @@
 # supervised device can be remotely wiped, inspected, or reclaimed, and a
 # separate key is revocable in one click without touching anything personal.
 #
-# On beast the equivalent is sops-managed rather than hand-created: the personal
-# homelab hosts live encrypted in secrets/personal.yaml and are decrypted to a
-# path under ~/.config/sops-nix at activation. Same reasoning — the hostnames
-# are not something to publish — but with no manual file to forget.
-    includes =
-      lib.optionals isWork [ "~/.ssh/config.local" ]
-      ++ lib.optionals (!isWork) [ config.sops.secrets.ssh_config.path ];
+    includes = [ "~/.ssh/config.local" ];
 
 # Manage SSH client behavior, but not private keys. Create/import
 # ~/.ssh/id_ed25519 manually or from your password manager.
@@ -54,4 +66,3 @@
     };
   };
 }
-

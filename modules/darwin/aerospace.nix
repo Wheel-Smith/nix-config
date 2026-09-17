@@ -1,4 +1,4 @@
-{ isWork, ... }:
+{ pkgs, isWork, ... }:
 # Keybindings, gaps, modes and workspace letters are identical on both hosts.
 # Only the app -> workspace rules differ, since the two machines run different
 # apps.
@@ -39,10 +39,21 @@ let
   ];
 in
 {
+  # Keep the CLI available in interactive shells too. AeroSpace's launch agent
+  # itself has a minimal PATH, so its startup command below uses the absolute
+  # store path.
+  environment.systemPackages = [ pkgs.jankyborders ];
+
   services.aerospace = {
     enable = true;
     settings = {
-      "after-startup-command" = [ ];
+      "after-startup-command" = [
+        # JankyBorders detects an existing instance, so this is safe when
+        # AeroSpace restarts.
+        # Match the Orange macOS accent configured in preferences.nix. The
+        # inactive border is the same hue, dimmed so focus stays obvious.
+        "exec-and-forget ${pkgs.jankyborders}/bin/borders active_color=0xffff9500 inactive_color=0xff7f4b00 width=5.0"
+      ];
 
       "enable-normalization-flatten-containers" = true;
       "enable-normalization-opposite-orientation-for-nested-containers" = true;
@@ -78,7 +89,13 @@ in
           binding = {
             "alt-slash" = "layout tiles horizontal vertical";
             "alt-comma" = "layout accordion horizontal vertical";
-            "alt-shift-m" = "fullscreen";
+            # Toggle a window between the tiling tree and a floating frame.
+            # AeroSpace has no built-in command to position a floating frame.
+            "alt-shift-space" = "layout floating tiling";
+
+            # AeroSpace fullscreen fills the current workspace without creating
+            # a separate macOS Space.
+            "alt-f" = "fullscreen";
 
             "alt-h" = "focus left";
             "alt-j" = "focus down";
