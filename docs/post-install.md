@@ -5,9 +5,9 @@ These are intentionally manual. They are app-owned, account-owned, privacy/TCC, 
 ## Browser and launcher
 
 - Open System Settings → Desktop & Dock → Default web browser → Brave Browser.
-- Open Raycast once and set its hotkey to Cmd-Space.
+- Open Vicinae once and set its hotkey to Cmd-Space.
 - Verify Option-Cmd-Space still opens Finder search.
-- If Cmd-Space opens Spotlight instead of Raycast, confirm the nix-darwin symbolic hotkey setting for Spotlight hotkey 64 is active, then restart SystemUIServer or log out/in.
+- If Cmd-Space opens Spotlight instead of Vicinae, confirm the nix-darwin symbolic hotkey setting for Spotlight hotkey 64 is active, then restart SystemUIServer or log out/in.
 
 ## Accounts and sync
 
@@ -32,7 +32,7 @@ Grant permissions only when macOS prompts or when an app clearly needs them.
 
 Likely permissions:
 
-- Raycast: Accessibility, Automation as prompted
+- Vicinae: Accessibility/Input Monitoring as prompted
 - AeroSpace: Accessibility
 - Shottr: Screen Recording, Accessibility if needed
 - RustDesk: Screen Recording, Accessibility, Full Disk Access as needed
@@ -94,4 +94,3 @@ From the repo:
 ```bash
 just doctor
 ```
-

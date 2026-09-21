@@ -111,7 +111,7 @@ if [ "$HOST" = "work" ]; then
     ok "power.sleep not applied (sleep=$sleepv displaysleep=$dispv)"
   fi
 
-  # No Raycast here, so Cmd+Space must stay bound to Spotlight.
+  # No personal launcher here, so Cmd+Space must stay bound to Spotlight.
   if defaults read com.apple.symbolichotkeys AppleSymbolicHotKeys 2>/dev/null | command grep -qE '^\s+64 =' ; then
     no "Spotlight hotkey untouched" "symbolichotkeys key 64 is present"
   else
@@ -180,7 +180,7 @@ if command -v brew >/dev/null 2>&1; then
     # it is admin-deployed, so brew must not own it.
     want="brave-browser caido crystalfetch dbeaver-community firefox ghostty obsidian postman spotify utm visual-studio-code vlc "
     expect "cask set matches config" "$want" "$casks"
-    for banned in tailscale-app protonvpn rustdesk wireshark-app orbstack raycast claude ollama-app; do
+    for banned in tailscale-app protonvpn rustdesk wireshark-app orbstack claude ollama-app; do
       printf '%s' "$casks" | command grep -qw "$banned" \
         && no "excluded cask absent: $banned" "installed" \
         || ok "excluded cask absent: $banned"

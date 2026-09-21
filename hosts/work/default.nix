@@ -6,7 +6,8 @@
 #   modules/darwin/hostname.nix — the MDM owns the machine name
 #
 # and isWork additionally gates off power.sleep, the screensaver password
-# prompt, and the Spotlight hotkey unbind (no Raycast here). See
+# prompt, and the Spotlight hotkey remains bound because no launcher is
+# installed here. See
 # docs/work-mac.md.
 #
 # On the name specifically: with networking.* unset, nix-darwin issues no

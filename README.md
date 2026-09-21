@@ -183,7 +183,7 @@ Edit [`modules/darwin/homebrew.nix`](modules/darwin/homebrew.nix):
 
 ```nix
 brews = [ "lazyssh" "mole" "opencode" ];   # CLI formulae
-casks = [ "ghostty" "raycast" /* ... */ ]; # GUI apps
+casks = [ "ghostty" "vicinae" /* ... */ ]; # GUI apps
 ```
 
 `onActivation.cleanup = "uninstall"` means anything **not** in these lists gets

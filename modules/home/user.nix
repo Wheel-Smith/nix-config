@@ -20,6 +20,7 @@
     ./lazygit.nix
     ./btop.nix
     ./wallpaper.nix
+    ./vicinae.nix
     ./secrets.nix
   ];
 
