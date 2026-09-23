@@ -109,6 +109,13 @@
             user = username;
             autoMigrate = true;
             mutableTaps = false;
+            # Homebrew 6.0+ requires this variable during startup, but the
+            # nix-homebrew launcher does not export it yet. Keep it pointed at
+            # the managed Apple Silicon launcher so activation and `brew`
+            # agree on the executable path.
+            extraEnv = {
+              HOMEBREW_ORIGINAL_BREW_FILE = "/opt/homebrew/bin/brew";
+            };
             # The xykong tap exists solely for flux-markdown, which is a beast
             # cask. Tapping and trusting a third-party tap on the work Mac for
             # a package it never installs is pure downside: an extra

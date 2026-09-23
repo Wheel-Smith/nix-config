@@ -54,7 +54,7 @@ in
         # AeroSpace restarts.
         # Match the Orange macOS accent configured in preferences.nix. The
         # inactive border is the same hue, dimmed so focus stays obvious.
-        "exec-and-forget ${pkgs.jankyborders}/bin/borders active_color=0xffff9500 inactive_color=0xff7f4b00 width=5.0"
+        "exec-and-forget ${pkgs.jankyborders}/bin/borders active_color=0xffff9500 inactive_color=0xff7f4b00 width=3.0"
       ];
 
       "enable-normalization-flatten-containers" = true;

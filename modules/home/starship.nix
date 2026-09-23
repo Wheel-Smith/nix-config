@@ -10,7 +10,9 @@
       # blanks the git_branch/git_status segments. It gets worse where an
       # endpoint security agent scans each exec, so leave generous headroom.
       command_timeout = 1000;
-      format = "[$directory$git_branch$git_status]($style)$character";
+      # Render Starship's complete module set. Modules remain context-aware, so
+      # language/package information only appears in matching projects.
+      format = "$all";
 
       character = {
         error_symbol = "[✗](bold cyan)";
@@ -39,12 +41,11 @@
         up_to_date = " ";
         untracked = "? ";
         modified = " ";
-        stashed = "";
-        staged = "";
-        renamed = "";
-        deleted = "";
+        stashed = "≡ ";
+        staged = " ";
+        renamed = "➜ ";
+        deleted = " ";
       };
     };
   };
 }
-

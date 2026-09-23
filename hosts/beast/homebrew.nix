@@ -43,6 +43,8 @@
       "proton-mail"
       "proton-pass"
       "protonvpn"
+      # "chang-07/tap/rascal"
+      "reminders-menubar"
       "rustdesk"
       "shottr"
       "slack"
@@ -62,6 +64,7 @@
     masApps = {
       "DigiDoc4" = 1370791134;
       "eduVPN" = 1317704208;
+      "Amphetamine" = 937984704;
     };
   };
 }
