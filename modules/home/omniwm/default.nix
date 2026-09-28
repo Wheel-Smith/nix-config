@@ -173,25 +173,11 @@ let
     # different button and stays.
     gestures.mouseMoveModifierKey = "optionCommand";
 
-    # Replaces the Ice menu-bar manager. Hidden icons are reached by
-    # right-clicking (or Option-clicking) OmniWM's menu-bar icon. The list has
-    # to live here: settings.toml is read-only, so picks made in OmniWM's
-    # Settings window cannot be saved.
-    hiddenBar = {
-      # VPN icons (Tailscale, ProtonVPN, eduVPN) stay visible on purpose:
-      # their connection state should be glanceable.
-      hiddenBundleIDs = [
-        "cc.ffitch.shottr"
-        "ch.protonmail.drive"
-        "me.proton.pass.electron"
-        "dev.kdrag0n.MacVirt" # OrbStack
-        "com.electron.ollama"
-        "org.localsend.localsendApp"
-        "com.carriez.rustdesk"
-      ];
-      # Ice re-hid after 15 s.
-      rehideIntervalSeconds = 15.0;
-    };
+    # Off: while Hidden Bar conceals icons, OmniWM 0.7.3 hides its own
+    # menu-bar item too (HiddenBarStatusItems.swift) and shows a stand-in
+    # under the notch instead, which loses the workspace name below. Unused
+    # menu-bar icons are switched off in System Settings → Menu Bar instead.
+    hiddenBar.enabled = false;
 
     # On a notched display the bar is pushed below the menu bar, where it
     # floats over the top of the focused window. Keep it out of the way:
@@ -246,15 +232,21 @@ let
       else if lib.elem (h.binding or "") claimedChords then h // { binding = "Unassigned"; }
       else h) defaults.hotkeys;
 
-  # Upstream pins 6 and 7 to a secondary monitor with emoji labels. Keep every
-  # workspace on the main display like AeroSpace did and let each follow
-  # defaultLayoutType. Letter workspaces are appended as 10, 11, ...
+  # Upstream pins 6 and 7 to a secondary monitor with emoji labels. Instead,
+  # every workspace follows defaultLayoutType and lives on the main display,
+  # except the browser's, which lives on the external monitor. OmniWM has no
+  # unpinned workspaces, and a window can only be sent to a monitor that is
+  # showing one, so without it the external monitor could receive nothing.
+  # With the external monitor unplugged it falls back to the main display.
+  # Letter workspaces are appended as 10, 11, ...
   onMainFollowingDefaultLayout = {
     layoutType = "default";
     monitorAssignment = { type = "main"; };
   };
+  onSecondary = ws:
+    if ws.name == "1" then ws // { monitorAssignment = { type = "secondary"; }; } else ws;
   mergedWorkspaces =
-    map (ws: removeAttrs ws [ "displayName" ] // onMainFollowingDefaultLayout) defaults.workspaces
+    map (ws: onSecondary (removeAttrs ws [ "displayName" ] // onMainFollowingDefaultLayout)) defaults.workspaces
     ++ map (ws: onMainFollowingDefaultLayout // {
       id = uuidFor ws.letter;
       name = toString ws.number;

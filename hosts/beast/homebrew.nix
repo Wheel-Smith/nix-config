@@ -29,7 +29,8 @@
       "firefox"
       "xykong/tap/flux-markdown"
       "ghostty"
-      # Replaced by OmniWM's Hidden Bar (modules/home/omniwm, hiddenBar).
+      # Dropped: unused menu-bar icons are switched off in System Settings →
+      # Menu Bar (OmniWM's own Hidden Bar is off, see modules/home/omniwm).
       # "jordanbaird-ice"
       "legcord"
       "libreoffice"
