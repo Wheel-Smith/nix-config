@@ -21,6 +21,7 @@
     ./btop.nix
     ./wallpaper.nix
     ./vicinae.nix
+    ./omniwm
     ./secrets.nix
   ];
 

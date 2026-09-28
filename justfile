@@ -63,6 +63,30 @@ preflight:
 verify:
     ./scripts/verify-host.sh {{host}}
 
+# See modules/home/omniwm/default.nix for why the defaults are vendored.
+# Refuses a symlink: that is our own generated file, not OmniWM's defaults.
+# Anything changed in the OmniWM GUI before capturing is captured too.
+#
+# Vendor OmniWM's first-launch settings.toml as defaults for this version
+omniwm-capture:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    src="${XDG_CONFIG_HOME:-$HOME/.config}/omniwm/settings.toml"
+    [ -f "$src" ] || { echo "no $src yet — launch OmniWM once first" >&2; exit 1; }
+    [ -L "$src" ] && { echo "$src is the Nix-managed symlink, not OmniWM's own defaults" >&2; exit 1; }
+    version="$(nix eval --raw .#darwinConfigurations.{{host}}.pkgs.omniwm.version)"
+    dest="modules/home/omniwm/defaults-$version.toml"
+    cp "$src" "$dest"
+    git add "$dest"
+    echo "captured $dest — now run: just switch"
+
+# Reads the live settings.toml, so it reflects what OmniWM is actually using.
+#
+# List OmniWM's assigned hotkeys (optionally filtered, e.g. `just omniwm-keys focus`)
+omniwm-keys filter="":
+    @nix eval --impure --raw --expr 'let d = builtins.fromTOML (builtins.readFile (builtins.getEnv "HOME" + "/.config/omniwm/settings.toml")); in builtins.concatStringsSep "\n" (map (h: "${h.binding}|${h.id}") (builtins.filter (h: (h.binding or "Unassigned") != "Unassigned") d.hotkeys))' \
+      | awk -F'|' '{printf "%-34s %s\n",$1,$2}' | grep -i -- "{{filter}}"
+
 # Roll back to the previous generation
 rollback:
     sudo darwin-rebuild rollback

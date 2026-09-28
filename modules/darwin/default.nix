@@ -20,7 +20,9 @@
     ./trackpad.nix
     ./preferences.nix
     ./screenshots.nix
-    ./aerospace.nix
+    # Replaced by OmniWM + skhd; kept for rollback (see docs/rollback.md).
+    # ./aerospace.nix
+    ./skhd.nix
     ./security.nix
     ./fonts.nix
     ./gc.nix
