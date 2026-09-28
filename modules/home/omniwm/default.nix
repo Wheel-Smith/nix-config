@@ -43,6 +43,17 @@ let
     (rule "com.mitchellh.ghostty" "3")
   ];
 
+  # Small utility windows float instead of being squeezed into a tile. A rule
+  # for an app that is not installed is a no-op, so this is shared.
+  floatWindowRules = map (bundleId: { inherit bundleId; layout = "float"; }) [
+    "com.apple.systempreferences" # System Settings
+    "com.apple.calculator"
+    "me.proton.pass.electron"
+    "ch.protonvpn.mac"
+    "org.eduvpn.app"
+    "io.tailscale.ipn.macsys"
+  ];
+
   letterWindowRules = lib.concatMap (ws:
     map (app: rule app (toString ws.number)) ws.apps) letterWorkspaces;
 
@@ -89,6 +100,13 @@ let
 
     # Its default Option+Shift+O belongs to the O workspace now (skhd).
     "toggleOverview" = "Option+Shift+W";
+
+    # Send the focused window to the monitor in that direction (all four,
+    # so it works however the displays are arranged).
+    "moveWindowToMonitor.left" = "Control+Option+Shift+H";
+    "moveWindowToMonitor.down" = "Control+Option+Shift+J";
+    "moveWindowToMonitor.up" = "Control+Option+Shift+K";
+    "moveWindowToMonitor.right" = "Control+Option+Shift+L";
 
     "workspaceBackAndForth" = "Option+Tab";
     "moveWorkspaceToMonitor.right" = "Option+Shift+Tab";
@@ -138,7 +156,42 @@ let
     # preferences.nix (0xffff9500).
     borders = { enabled = true; width = 2.0; color = orange; darkColor = orange; };
 
-    focus.moveMouseToFocusedWindow = true;
+    focus = {
+      moveMouseToFocusedWindow = true;
+      # Like AeroSpace: at a screen edge, Option+hjkl focuses and
+      # Option+Shift+hjkl moves onto the neighbouring monitor, and focus
+      # follows a window sent to another monitor.
+      crossesMonitorAtEdge = true;
+      moveCrossesMonitorAtEdge = true;
+      followsWindowToMonitor = true;
+    };
+
+    # OmniWM's drag-to-swap gesture defaults to Option+drag, which also grabs
+    # macOS's own Option+drag on a window edge (resize from the centre, all
+    # sides at once). Move the gesture to Option+Command so plain Option-drag
+    # resizing works again. Option+right-drag (resize a tiled window) is a
+    # different button and stays.
+    gestures.mouseMoveModifierKey = "optionCommand";
+
+    # Replaces the Ice menu-bar manager. Hidden icons are reached by
+    # right-clicking (or Option-clicking) OmniWM's menu-bar icon. The list has
+    # to live here: settings.toml is read-only, so picks made in OmniWM's
+    # Settings window cannot be saved.
+    hiddenBar = {
+      # VPN icons (Tailscale, ProtonVPN, eduVPN) stay visible on purpose:
+      # their connection state should be glanceable.
+      hiddenBundleIDs = [
+        "cc.ffitch.shottr"
+        "ch.protonmail.drive"
+        "me.proton.pass.electron"
+        "dev.kdrag0n.MacVirt" # OrbStack
+        "com.electron.ollama"
+        "org.localsend.localsendApp"
+        "com.carriez.rustdesk"
+      ];
+      # Ice re-hid after 15 s.
+      rehideIntervalSeconds = 15.0;
+    };
 
     # On a notched display the bar is pushed below the menu bar, where it
     # floats over the top of the focused window. Keep it out of the way:
@@ -217,6 +270,7 @@ let
       # that misbehave when tiled small); keep them and append ours.
       appRules =
         defaults.appRules
+        ++ floatWindowRules
         ++ sharedWindowRules
         ++ letterWindowRules
         ++ (if isWork then workWindowRules else personalWindowRules);

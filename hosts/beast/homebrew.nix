@@ -29,7 +29,8 @@
       "firefox"
       "xykong/tap/flux-markdown"
       "ghostty"
-      "jordanbaird-ice"
+      # Replaced by OmniWM's Hidden Bar (modules/home/omniwm, hiddenBar).
+      # "jordanbaird-ice"
       "legcord"
       "libreoffice"
       "localsend"
@@ -64,7 +65,9 @@
     masApps = {
       "DigiDoc4" = 1370791134;
       "eduVPN" = 1317704208;
-      "Amphetamine" = 937984704;
+      # Replaced by OmniWM's "Keep Awake" menu toggle (or `caffeinate -d`).
+      # cleanup = "uninstall" removes Mac App Store apps too once dropped here.
+      # "Amphetamine" = 937984704;
     };
   };
 }
