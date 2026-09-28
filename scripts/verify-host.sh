@@ -143,12 +143,19 @@ expect "timezone" "Europe/Tallinn" \
 fontcount="$(ls "/Library/Fonts/Nix Fonts" 2>/dev/null | command wc -l | command tr -d ' ')"
 [ "${fontcount:-0}" -gt 0 ] && ok "nerd fonts installed ($fontcount entries)" || no "nerd fonts installed" "0 entries"
 
-# The process is called AeroSpace, with a capital S.
-if pgrep -qi '^AeroSpace$' 2>/dev/null || pgrep -qi aerospace 2>/dev/null; then
-  ok "aerospace is running"
+if pgrep -qx OmniWM 2>/dev/null; then
+  ok "omniwm is running"
 else
-  no "aerospace is running" "process not found — check Accessibility permission"
+  no "omniwm is running" "process not found — check Accessibility and Input Monitoring"
 fi
+# skhd forwards Option+<letter> to OmniWM's letter workspaces.
+if pgrep -qx skhd 2>/dev/null; then
+  ok "skhd is running"
+else
+  no "skhd is running" "process not found — check Accessibility permission"
+fi
+# OmniWM pauses window management while this is off; unset means the default (on).
+expect "displays have separate Spaces" "0" "$(defaults read com.apple.spaces spans-displays 2>/dev/null || echo 0)"
 
 # ---------------------------------------------------------------------------
 head_ "Dock"

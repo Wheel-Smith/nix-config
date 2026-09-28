@@ -227,10 +227,13 @@ registry, and apps the MDM deploys as `.pkg`/`.dmg` are invisible to it.
 
 ## Known rough edges
 
-**Aerospace and TCC.** Accessibility grants are keyed to a binary's path and
-signature, and Aerospace lives at a `/nix/store/<hash>-aerospace-…/` path that
-changes on every package update. A version bump can silently drop the grant and
-you re-approve it. Not specific to the work Mac.
+**OmniWM, skhd and TCC.** Accessibility (and, for OmniWM, Input Monitoring)
+grants are keyed to a binary's path and signature, and both live at
+`/nix/store/<hash>-…/` paths that change on every package update. A version
+bump can silently drop the grant and you re-approve it. skhd rarely changes;
+OmniWM is Developer ID-signed and notarized, which MDM policies tend to accept.
+Not specific to the work Mac.
 
 **Tiling and video calls.** Conferencing apps' floating call/screen-share windows
-sometimes fight the tiler. Fix with a float rule, not by dropping Aerospace.
+sometimes fight the tiler. Fix with an OmniWM app rule (`layout = "float"`),
+not by dropping the tiler.

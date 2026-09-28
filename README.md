@@ -226,12 +226,14 @@ nix-config/
 ├── hosts/
 │   ├── beast/                   # personal: dock, homebrew, packages + firewall/hostname
 │   └── work/                    # work: dock, homebrew, packages (no firewall/hostname)
+├── overlays/                    # package overrides (OmniWM pinned ahead of nixpkgs)
 ├── scripts/                     # preflight.sh (before switch), verify-host.sh (after)
 ├── wallpapers/                  # SVG sources; rasterised at build time (beast only)
 └── modules/
-    ├── darwin/                  # default.nix = the set safe on EVERY host
+    ├── darwin/                  # default.nix = the set safe on EVERY host (incl. skhd.nix)
     ├── home/                    # home-manager; gated by isWork where hosts differ
-    └── shared/
+    │   └── omniwm/              # window manager + its vendored defaults-<version>.toml
+    └── shared/                  # letter-workspaces.nix, read by skhd.nix and omniwm/
 ```
 
 Hosts share code through an `isWork` flag threaded via `specialArgs`:
@@ -239,7 +241,7 @@ Hosts share code through an `isWork` flag threaded via `specialArgs`:
 - **Identical on both** — `nix`, `system`, `finder`, `trackpad`, `keyboard`,
   `screenshots`, `fonts`, `security`, and all the shell/editor modules.
 - **Shared, forked internally by `isWork`** — `preferences.nix`,
-  `aerospace.nix`, `packages.nix`, `git.nix`, `ssh.nix`, `links.nix`,
+  `omniwm/`, `letter-workspaces.nix`, `packages.nix`, `git.nix`, `ssh.nix`, `links.nix`,
   `vscode.nix`, `containers.nix`.
 - **Per-host files** — `dock.nix`, `homebrew.nix`, `packages.nix` under
   `hosts/<host>/`.
