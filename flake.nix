@@ -100,7 +100,10 @@
         nix-homebrew.darwinModules.nix-homebrew
         {
           nixpkgs.hostPlatform = system;
-          nixpkgs.overlays = [ nix-vscode-extensions.overlays.default ];
+          nixpkgs.overlays = [
+            nix-vscode-extensions.overlays.default
+            (import ./overlays)
+          ];
           nixpkgs.config.allowUnfree = true;
           system.primaryUser = username;
 
