@@ -77,6 +77,15 @@ in
         "nix.enableLanguageServer" = true;
         "nix.serverPath" = "nil";
         "nix.formatterPath" = "nixfmt";
+
+        # Dev containers get no host credentials: by default the extension
+        # wires the container's git and docker to helpers that answer from
+        # the host's keychain, so anything running inside (an AI agent
+        # sandbox especially) could push to GitHub or pull private images as
+        # you. Commit and push from the host instead. The SSH agent is cut
+        # per container with `remoteEnv.SSH_AUTH_SOCK = ""`.
+        "dev.containers.gitCredentialHelperConfigLocation" = "none";
+        "dev.containers.dockerCredentialHelper" = false;
       };
 
       keybindings = [ ];
