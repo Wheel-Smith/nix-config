@@ -11,6 +11,7 @@
 
     brews = [
       "lazyssh"
+      # "llama.cpp"
       "mole"
       # "opencode"
       "powershell"
@@ -20,7 +21,9 @@
       "brave-browser"
       "caido"
       "claude"
-      "claude-code"
+      # The @latest channel: new models land there days before the stable
+      # `claude-code` cask picks them up.
+      "claude-code@latest"
       "codex"
       "crystalfetch"
       "cyberduck"
