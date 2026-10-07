@@ -10,10 +10,10 @@ final: prev: {
   # change must be a deliberate edit here followed by `just omniwm-capture`,
   # never a side effect of `nix flake update`.
   omniwm = prev.omniwm.overrideAttrs (finalAttrs: _: {
-    version = "0.7.3";
+    version = "0.7.5";
     src = prev.fetchurl {
       url = "https://github.com/OmniNull/OmniWM/releases/download/v${finalAttrs.version}/OmniWM-v${finalAttrs.version}.zip";
-      hash = "sha256-u5nDoWynF45a6A+EN3x5I8tP+jZC2A1GFXGxlT1Q9d8=";
+      hash = "sha256-oV/KNBGojdBviTUyjChiY9V6RMe8wiVUd+KTA/qUzM4=";
     };
   });
 }

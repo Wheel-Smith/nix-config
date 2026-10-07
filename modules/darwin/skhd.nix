@@ -1,6 +1,7 @@
-{ lib, pkgs, isWork, ... }:
+{ config, lib, pkgs, isWork, ... }:
 # skhd: a hotkey daemon whose only job here is forwarding Option+<letter> to
-# OmniWM, which cannot bind more than nine workspaces itself. The letters and
+# OmniWM for workspaces above nine (see letter-workspaces.nix for why skhd and
+# not OmniWM's own 0.7.4+ hotkeys). The letters and
 # their apps live in modules/shared/letter-workspaces.nix.
 #
 # skhd needs the Accessibility permission. The grant is tied to the binary's
@@ -33,4 +34,17 @@ in
   # config directive exists only in unreleased skhd, and 0.3.9 rejects the
   # whole file over it, silently leaving no hotkeys bound.
   launchd.user.agents.skhd.serviceConfig.EnvironmentVariables.SHELL = "/bin/sh";
+
+  # skhd reads its config once and does not notice when activation swaps the
+  # /etc/skhdrc symlink, and the stock agent's arguments never change, so it
+  # kept running a stale config: after the OmniWM 0.7.3 -> 0.7.5 bump every
+  # letter key called the old omniwmctl, which cannot reach the new OmniWM,
+  # and all of them failed silently until a manual restart. Pointing skhd at
+  # the config's store path changes the agent whenever the config does, so
+  # activation restarts skhd with it.
+  launchd.user.agents.skhd.serviceConfig.ProgramArguments = lib.mkForce [
+    "${config.services.skhd.package}/bin/skhd"
+    "-c"
+    "${pkgs.writeText "skhdrc" config.services.skhd.skhdConfig}"
+  ];
 }

@@ -61,8 +61,6 @@ let
     (rule "com.apple.MobileSMS" "4")
     (rule "net.whatsapp.WhatsApp" "4")
     (rule "ch.protonmail.desktop" "5")
-    (rule "com.hnc.Discord" "6")
-    (rule "app.legcord.Legcord" "6")
   ];
 
   # Both corporate apps are MDM-deployed, not in our Homebrew list. The old
@@ -149,7 +147,9 @@ let
 
     gaps = {
       size = 5.0;
-      outer = { left = 2.0; right = 2.0; top = 2.0; bottom = 2.0; };
+      # Layout fullscreen (Option+F) keeps the outer margins too.
+      fullscreenUsesOuterGaps = true;
+      outer = { left = 5.0; right = 5.0; top = 5.0; bottom = 5.0; };
     };
 
     # Built in, replacing JankyBorders. Orange matches the macOS accent set in
@@ -157,6 +157,7 @@ let
     borders = { enabled = true; width = 2.0; color = orange; darkColor = orange; };
 
     focus = {
+      followsMouse = true;
       moveMouseToFocusedWindow = true;
       # Like AeroSpace: at a screen edge, Option+hjkl focuses and
       # Option+Shift+hjkl moves onto the neighbouring monitor, and focus
