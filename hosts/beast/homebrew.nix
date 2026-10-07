@@ -39,7 +39,6 @@
       # "nordvpn"
       "obsidian"
       "ollama-app"
-      "orbstack"
       "postman"
       "proton-drive"
       "proton-mail"

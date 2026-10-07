@@ -50,13 +50,11 @@
     };
 
 # ~/.zprofile equivalent. Keep imperative app integrations guarded so a
-# clean VM still activates even before Homebrew/OrbStack have initialized.
+# clean VM still activates even before Homebrew has initialized.
     profileExtra = ''
       if [ -x /opt/homebrew/bin/brew ]; then
         eval "$(/opt/homebrew/bin/brew shellenv)"
           fi
-
-          source ~/.orbstack/shell/init.zsh 2>/dev/null || :
           '';
 
     shellAliases = {
