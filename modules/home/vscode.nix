@@ -33,7 +33,10 @@ let
     jnoortheen.nix-ide
     redhat.vscode-yaml            # docker-compose, nginx, vault
     tamasfe.even-better-toml      # pyproject.toml, ruff.toml
-    timonwong.shellcheck          # bash/zsh linting (binary bundled)
+    # nixpkgs' postInstall points shellcheck.executablePath at its own binary
+    # via jq, which breaks on 0.46.0 (`contributes.configuration` became an
+    # array). The binary is bundled in the .vsix, so the patch is unnecessary.
+    (timonwong.shellcheck.overrideAttrs { postInstall = ""; })
     foxundermoon.shell-format     # sh / Dockerfile / .env formatting (needs shfmt)
   ];
 in
