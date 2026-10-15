@@ -9,7 +9,7 @@
 # writes settings.json and symlinks extensions into ~/.vscode/extensions, which
 # the Homebrew-installed VS Code reads.
 #
-# Requires: keep "visual-studio-code" in modules/darwin/homebrew.nix casks,
+# Requires: keep "visual-studio-code" in hosts/<host>/homebrew.nix casks,
 # and keep `nixpkgs.config.allowUnfree = true;` (some extensions are unfree).
 #
 # Some extensions call external binaries that must be on PATH — added in

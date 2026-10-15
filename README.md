@@ -13,8 +13,8 @@ Homebrew prompts, no clicking through GUI installers.
 | `beast` | `rattatui` | Personal Mac — owns everything about itself |
 | `work` | `kristjan` | MDM-managed work Mac — see [`docs/work-mac.md`](docs/work-mac.md) |
 
-Both hosts are `aarch64-darwin` (Apple Silicon), with Homebrew pinned via
-`nix-homebrew` (tap-trust aware, Golden Gate-ready).
+Both hosts are `aarch64-darwin` (Apple Silicon) on macOS 27 "Golden Gate",
+with Homebrew installed and locked by `nix-homebrew` (tap-trust aware).
 
 `just` picks the host automatically from `id -un`, so `just switch` means the
 right thing on either machine.
@@ -23,7 +23,7 @@ right thing on either machine.
 
 ## Prerequisites
 
-1. **macOS** on Apple Silicon (tested on macOS 27 "Golden Gate" beta).
+1. **macOS** on Apple Silicon (in use on macOS 27.0.1 "Golden Gate").
 2. **Xcode Command Line Tools** — needed for `git` before Nix is installed:
    ```bash
    xcode-select --install
@@ -50,14 +50,24 @@ right thing on either machine.
 
 ```bash
 # 1. Clone the config
-git clone https://github.com/Wheel-Smith/nix-config.git ~/nix-config
-cd ~/nix-config
+git clone https://github.com/Wheel-Smith/nix-config.git ~/projects/nix-config
+cd ~/projects/nix-config
 
-# 2. Build & activate the system for the first time.
+# 2. Check for anything that would collide with the first switch
+#    (read-only; prints the exact fix for every finding)
+./scripts/preflight.sh beast
+
+# 3. Build & activate the system for the first time.
 #    On a fresh machine neither `darwin-rebuild` nor `just` are on PATH yet,
 #    so run the activation straight from the flake output:
 sudo nix run nix-darwin -- switch --flake .#beast
 ```
+
+> **Secrets first.** `beast` decrypts `secrets/personal.yaml` during
+> activation, so the machine needs its own age key and must be a recipient in
+> `.sops.yaml` *before* the first switch, or activation stops halfway. The
+> preflight check flags this; the steps are in
+> [`secrets/README.md`](secrets/README.md).
 
 That single activation will:
 
@@ -65,7 +75,7 @@ That single activation will:
 - create the unified `brew` launcher at `/run/current-system/sw/bin/brew`,
 - apply declarative **tap trust** for any third-party taps,
 - run `brew bundle` to install every brew and cask in
-  [`modules/darwin/homebrew.nix`](modules/darwin/homebrew.nix),
+  [`hosts/beast/homebrew.nix`](hosts/beast/homebrew.nix),
 - install the `just` task runner and the rest of your packages,
 - activate **home-manager** for `rattatui`.
 
@@ -84,12 +94,18 @@ commands. **`just` is installed declaratively** (it's in the Nix config — do
 just                 # list all recipes
 just switch          # apply the configuration
 just build           # preview changes without activating
+just diff            # show what would change (package versions, etc.)
 just check           # validate the flake evaluates
 just update          # update all inputs and re-lock
-just upgrade         # update inputs, then switch
+just upgrade         # update inputs, switch, then upgrade Homebrew packages
+just brew-upgrade    # only the Homebrew upgrade (if `upgrade` stopped after the switch)
+just verify          # assert the activated system matches the config
 just rollback        # revert to previous generation
-just clean           # garbage-collect old generations
+just clean           # delete generations older than 7 days
 just generations     # list system generations
+just preflight       # collision check before a first switch
+just secrets         # edit secrets/personal.yaml (sops)
+just ssh-sync        # save LazySSH host edits into the secrets (runs before switch)
 ```
 
 > ⚠️ **Chicken-and-egg:** on a brand-new machine `just` doesn't exist yet, so
@@ -99,24 +115,10 @@ just generations     # list system generations
 The equivalent raw commands, if you ever need them without `just`:
 
 ```bash
-cd ~/nix-config
+cd ~/projects/nix-config
 sudo darwin-rebuild switch --flake .#beast   # apply
 darwin-rebuild build --flake .#beast         # preview
 nix flake check                              # validate
-```
-
-### Making `just` available
-
-Add it to your packages so it's reproducible. Either in a nix-darwin module:
-
-```nix
-environment.systemPackages = [ pkgs.just ];
-```
-
-…or via home-manager:
-
-```nix
-home.packages = [ pkgs.just ];
 ```
 
 ### Updating dependencies
@@ -179,12 +181,17 @@ update. A reboot guarantees every subsystem picks up the change.
 
 ### Homebrew (casks & GUI apps)
 
-Edit [`modules/darwin/homebrew.nix`](modules/darwin/homebrew.nix):
+Each host has its own list: [`hosts/beast/homebrew.nix`](hosts/beast/homebrew.nix)
+and [`hosts/work/homebrew.nix`](hosts/work/homebrew.nix).
 
 ```nix
-brews = [ "lazyssh" "mole" "opencode" ];   # CLI formulae
+brews = [ "lazyssh" "mole" ];              # CLI formulae
 casks = [ "ghostty" "vicinae" /* ... */ ]; # GUI apps
 ```
+
+Prefer nixpkgs for CLI tools (`modules/home/packages.nix`, or a topic module
+such as `kubernetes.nix`); Homebrew is for GUI apps and the odd formula
+nixpkgs lacks.
 
 `onActivation.cleanup = "uninstall"` means anything **not** in these lists gets
 uninstalled on the next rebuild — the config is the single source of truth.
@@ -224,14 +231,19 @@ nix-config/
 ├── flake.nix                    # inputs, host definitions, nix-homebrew + tap trust
 ├── flake.lock                   # pinned dependency revisions (commit this!)
 ├── hosts/
-│   ├── beast/                   # personal: dock, homebrew, packages + firewall/hostname
+│   ├── beast/                   # personal: dock, homebrew, packages; imports firewall/hostname
 │   └── work/                    # work: dock, homebrew, packages (no firewall/hostname)
-├── overlays/                    # package overrides (OmniWM pinned ahead of nixpkgs)
-├── scripts/                     # preflight.sh (before switch), verify-host.sh (after)
+├── overlays/                    # package overrides (OmniWM pinned, debugpy test skip)
+├── scripts/                     # preflight.sh (before switch), verify-host.sh (after), ssh-sync.sh
+├── secrets/                     # sops-encrypted secrets (committed; beast only)
+├── docs/                        # bootstrap, work Mac, VM testing, rollback, post-install
 ├── wallpapers/                  # SVG sources; rasterised at build time (beast only)
 └── modules/
     ├── darwin/                  # default.nix = the set safe on EVERY host (incl. skhd.nix)
     ├── home/                    # home-manager; gated by isWork where hosts differ
+    │   ├── containers.nix       # Colima + docker CLI (loopback-only port forwards)
+    │   ├── kubernetes.nix       # k8s Colima profile (k3s), kubectl/helm/kind + scanners
+    │   ├── secrets.nix          # sops-nix wiring
     │   └── omniwm/              # window manager + its vendored defaults-<version>.toml
     └── shared/                  # letter-workspaces.nix, read by skhd.nix and omniwm/
 ```
@@ -240,15 +252,16 @@ Hosts share code through an `isWork` flag threaded via `specialArgs`:
 
 - **Identical on both** — `nix`, `system`, `finder`, `trackpad`, `keyboard`,
   `screenshots`, `fonts`, `security`, and all the shell/editor modules.
-- **Shared, forked internally by `isWork`** — `preferences.nix`,
-  `omniwm/`, `letter-workspaces.nix`, `packages.nix`, `git.nix`, `ssh.nix`, `links.nix`,
-  `vscode.nix`, `containers.nix`.
+- **Shared, forked internally by `isWork`** — `preferences.nix`, `skhd.nix`,
+  `omniwm/`, `letter-workspaces.nix`, `packages.nix`, `git.nix`, `ssh.nix`,
+  `links.nix`, `vscode.nix`, `wallpaper.nix`, `secrets.nix`, `kubernetes.nix`
+  (smaller VM on work).
 - **Per-host files** — `dock.nix`, `homebrew.nix`, `packages.nix` under
   `hosts/<host>/`.
-- **`beast`-only imports** — `firewall.nix`, `hostname.nix`. These are
-  compliance controls that the MDM owns on the work Mac; see
-  [`docs/work-mac.md`](docs/work-mac.md) for why importing them there can hard-fail
-  activation.
+- **`beast`-only** — `firewall.nix` and `hostname.nix` (compliance controls the
+  MDM owns on the work Mac; see [`docs/work-mac.md`](docs/work-mac.md) for why
+  importing them there can hard-fail activation), `playwright.nix`, and anything
+  from a third-party flake (the `sofka` Kubernetes TUI).
 
 ---
 
@@ -259,7 +272,7 @@ Hosts share code through an `isWork` flag threaded via `specialArgs`:
 | `The option 'nix-homebrew.trust' does not exist` | `flake.lock` pins a `nix-homebrew` commit older than the tap-trust feature (PR #157) | `just update-input nix-homebrew` |
 | `nixos-render-docs: error: unrecognized arguments: --sidebar-depth` | `nix-darwin` is newer than `nixpkgs` | `just update-input nixpkgs` (keep them in sync). Temporary bypass: `documentation.enable = false;` |
 | `Homebrew requires formulae to be in a tap, rejecting` | Old `nix-homebrew` rejecting `/nix/store`-backed taps (issue #148) | `just update-input nix-homebrew` (needs the PR #150 fix) |
-| `unknown keyword: :overwrite` (or any *"formula is unreadable"*), then `brew bundle can't satisfy your Brewfile` | `brew-src` runtime older than the `homebrew-core`/`homebrew-cask` inputs, which have adopted a newer DSL | bump `inputs.brew-src.url` in `flake.nix` to the current Homebrew tag |
+| `unknown keyword: :overwrite` (or any *"formula is unreadable"*), then `brew bundle can't satisfy your Brewfile` | `brew-src` runtime older than the `homebrew-core`/`homebrew-cask` inputs, which have adopted a newer DSL | `just update` (`brew-src` tracks Homebrew's `master`, so it moves with the taps); if `brew-src` was pinned to a tag, unpin it or bump the tag |
 | `just switch` dies at "Homebrew bundle…" and afterwards `man` pages, `$PATH` or session vars look stale | `brew bundle` runs **before** home-manager in the activation script, so a non-zero exit aborts everything after it — the system profile advances but `/run/current-system` and `~/.zshenv` do not | fix the Homebrew error, re-run `just switch`. Confirm with `readlink /run/current-system` vs `readlink -f /nix/var/nix/profiles/system` — they must match |
 | `Refusing to load … from untrusted tap` **only in an interactive shell** | trust lives in `$XDG_CONFIG_HOME/homebrew/trust.json` when that variable is set, but `nix-homebrew` writes it under `sudo` (env scrubbed) to `~/.homebrew/trust.json`. Activation reads the right one; your shell doesn't | harmless for activation. To silence it interactively: `env -u XDG_CONFIG_HOME brew …` |
 | `Refusing to load … from untrusted tap` | Third-party tap not trusted | add a `nix-homebrew.trust` entry |
@@ -275,9 +288,10 @@ Hosts share code through an `isWork` flag threaded via `specialArgs`:
 - **Do not install Homebrew or `just` manually** — `nix-homebrew` installs and
   pins Homebrew, and `just` comes from your Nix packages. Manual installs will
   conflict with the Nix-managed copies.
-- **`brew-src` pin:** currently `6.0.17`. The floor is macOS 27 support (first
-  in the 6.0.11 line), but the pin must also stay **at least as new as the
-  `homebrew-core` / `homebrew-cask` inputs**, which move independently and adopt
-  new DSL keywords over time. Too old a runtime rejects formulae outright — see
-  the troubleshooting row below.
+- **Homebrew runtime (`brew-src`):** tracks Homebrew's `master` branch, so
+  every `just update` moves the runtime together with the `homebrew-core` /
+  `homebrew-cask` inputs; the exact commit is still locked in `flake.lock`. A
+  fixed release tag drifted behind the taps twice, and too old a runtime rejects
+  formulae outright (see the troubleshooting table above). If a new Homebrew
+  ever breaks the switch, pin a tag in `flake.nix` until it is fixed.
 - **Verify casks installed:** `brew list --cask | wc -l`.
