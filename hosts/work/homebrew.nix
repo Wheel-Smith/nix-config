@@ -31,8 +31,23 @@
       "dbeaver-community"
       "firefox"
       "ghostty"
+      # Mac-admin tooling for building and checking configuration profiles:
+      # payloads, compliance baselines (mSCP), privacy/TCC (PPPC) grants.
+      # Authoring tools only, nothing the MDM deploys or enforces itself.
+      "imazing-profile-editor"
+      "mace"
       "obsidian"
       "postman"
+      "pppc-utility"
+      # Read-only Mac inspection: package/app signing, notarization and
+      # install scripts before deploying them, persistence and process
+      # triage. Nothing here installs a system or network extension, so it
+      # cannot collide with the endpoint security agent (which is also why
+      # LuLu and BlockBlock are not here).
+      "apparency"
+      "knockknock"
+      "suspicious-package"
+      "taskexplorer"
       # "slack"
       "spotify"
       "utm"
