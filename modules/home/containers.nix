@@ -1,4 +1,4 @@
-{ lib, pkgs, ... }:
+{ config, lib, pkgs, ... }:
 # Containers on both Macs: Colima, driven by the plain docker CLI.
 #
 # OrbStack and Docker Desktop both require a paid licence for commercial
@@ -116,6 +116,23 @@
   # plugins are in the CLI plugin directory; nixpkgs ships them under
   # libexec. `force` replaces the symlinks OrbStack left there.
   home.file = {
+    # Colima tells Lima to forward every guest port bound to 0.0.0.0
+    # (k3s's 6443 and 10250, any `docker run -p`) to 0.0.0.0 on the Mac, so
+    # they are reachable from the LAN; the firewall cannot stop it because
+    # the listener is Apple-signed /usr/bin/ssh. Lima puts rules from
+    # $LIMA_HOME/_config/override.yaml before the instance's own and uses
+    # the first match, so this one wins for every profile. It catches only
+    # wildcard binds (guestIP 0.0.0.0 implies guestIPMustBeZero; `::` counts
+    # too), for TCP and UDP (proto defaults to any); the Docker socket and
+    # 127.0.0.1 rules still come from Colima. Applies on the next start.
+    # (The *:53 listener from limactl is Lima's "pseudoloopback" forwarder
+    # for guest port 53 on 127.0.0.1: it binds 0.0.0.0 because 127.0.0.1:53
+    # needs root on macOS, but drops any connection not from loopback.)
+    "${config.services.colima.colimaHomeDir}/_lima/_config/override.yaml".text = ''
+      portForwards:
+        - guestIP: 0.0.0.0
+          hostIP: 127.0.0.1
+    '';
     ".docker/cli-plugins/docker-compose" = {
       source = "${pkgs.docker-compose}/libexec/docker/cli-plugins/docker-compose";
       force = true;
