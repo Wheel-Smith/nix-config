@@ -1,5 +1,13 @@
-{ config, lib, pkgs, ... }:
-# Kubernetes learning setup, beast only (imported from user.nix).
+{
+  config,
+  lib,
+  pkgs,
+  isWork,
+  ...
+}:
+# Kubernetes learning setup, on both Macs. The work Mac gets the same
+# nixpkgs tools and cluster setup, but nothing from third-party flakes (no
+# sofka, see modules/home/default.nix) and a smaller VM.
 #
 # Clusters live in their own Colima VM, the `k8s` profile, so experiments
 # never compete with the everyday Docker VM (`default`, containers.nix):
@@ -27,8 +35,10 @@ let
   # Same keys as the default profile (every key must be present, see
   # containers.nix), with only the differences spelled out.
   k8sSettings = lib.recursiveUpdate config.services.colima.profiles.default.settings {
-    cpu = 6;
-    memory = 8; # GiB: k3s plus a few kind nodes
+    # beast has 36 GB of RAM; the work Mac 16-18 GB, which still fits k3s
+    # plus one small kind cluster next to the 4 GiB Docker VM.
+    cpu = if isWork then 4 else 6;
+    memory = if isWork then 4 else 8; # GiB: k3s plus a few kind nodes
     disk = 60; # GiB, sparse
     kubernetes = {
       enabled = true;
@@ -41,44 +51,53 @@ let
   };
 in
 {
-  services.colima.profiles.k8s = {
-    isService = false; # on demand, like the default profile
-    settings = k8sSettings;
-  };
+  config = lib.mkMerge [
+    {
+      services.colima.profiles.k8s = {
+        isService = false; # on demand, like the default profile
+        settings = k8sSettings;
+      };
 
-  programs.sofka.enable = true; # k9s-style TUI; package from the sofka flake input
+      home.packages = with pkgs; [
+        # Core: talk to and inspect clusters.
+        kubectl
+        kubernetes-helm
+        kubectx # kubectx / kubens: switch context and namespace
+        stern # tail logs across many pods at once
+        kind
 
-  home.packages = with pkgs; [
-    # Core: talk to and inspect clusters.
-    kubectl
-    kubernetes-helm
-    kubectx # kubectx / kubens: switch context and namespace
-    stern # tail logs across many pods at once
-    kind
+        # DevSecOps: scan, lint and enforce. All plain CLIs, no cluster agents.
+        kubeconform # validate manifests against the API schemas, offline
+        kube-linter # best-practice checks on manifests and Helm charts
+        trivy # vulnerabilities and misconfig in images, manifests, clusters
+        kubescape # cluster posture against NSA/CISA and CIS benchmarks
+        popeye # live cluster hygiene report
+        kyverno # policy-as-code CLI (test policies before installing Kyverno)
+        cosign # sign and verify images
+        syft # SBOMs
+        grype # vulnerability scan from an SBOM
 
-    # DevSecOps: scan, lint and enforce. All plain CLIs, no cluster agents.
-    kubeconform # validate manifests against the API schemas, offline
-    kube-linter # best-practice checks on manifests and Helm charts
-    trivy # vulnerabilities and misconfig in images, manifests, clusters
-    kubescape # cluster posture against NSA/CISA and CIS benchmarks
-    popeye # live cluster hygiene report
-    kyverno # policy-as-code CLI (test policies before installing Kyverno)
-    cosign # sign and verify images
-    syft # SBOMs
-    grype # vulnerability scan from an SBOM
+        # GitOps, for later: a controller in the cluster syncs it to a Git repo.
+        # argocd
+        # fluxcd
+      ];
 
-    # GitOps, for later: a controller in the cluster syncs it to a Git repo.
-    # argocd
-    # fluxcd
-  ];
+      programs.zsh.shellAliases.k = "kubectl";
 
-  programs.zsh.shellAliases.k = "kubectl";
+      # Always show the current context/namespace in the prompt, so a command is
+      # never aimed at the wrong cluster. Only appears when a context is set.
+      programs.starship.settings.kubernetes.disabled = false;
+    }
 
-  # Always show the current context/namespace in the prompt, so a command is
-  # never aimed at the wrong cluster. Only appears when a context is set.
-  programs.starship.settings.kubernetes.disabled = false;
+    # beast only. sofka's module is not even imported on the work Mac, so the
+    # option does not exist there; and the work Mac's VS Code manages no
+    # extensions through Nix (vscode.nix).
+    (lib.optionalAttrs (!isWork) {
+      programs.sofka.enable = true; # k9s-style TUI; package from the sofka flake input
 
-  programs.vscode.profiles.default.extensions = [
-    pkgs.vscode-marketplace.ms-kubernetes-tools.vscode-kubernetes-tools
+      programs.vscode.profiles.default.extensions = [
+        pkgs.vscode-marketplace.ms-kubernetes-tools.vscode-kubernetes-tools
+      ];
+    })
   ];
 }

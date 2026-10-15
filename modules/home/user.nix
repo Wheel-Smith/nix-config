@@ -23,9 +23,8 @@
     ./vicinae.nix
     ./omniwm
     ./secrets.nix
+    ./kubernetes.nix
   ]
-  # Learning Kubernetes on the personal Mac only.
-  ++ lib.optional (!isWork) ./kubernetes.nix
   # Browser tests for personal projects; nothing on the work Mac needs them.
   ++ lib.optional (!isWork) ./playwright.nix;
 
