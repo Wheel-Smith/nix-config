@@ -30,7 +30,6 @@
       "dbeaver-community"
       "excalidrawz"
       "firefox"
-      "xykong/tap/flux-markdown"
       "ghostty"
       # Dropped: unused menu-bar icons are switched off in System Settings →
       # Menu Bar (OmniWM's own Hidden Bar is off, see modules/home/omniwm).

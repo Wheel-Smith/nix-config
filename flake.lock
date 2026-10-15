@@ -171,8 +171,7 @@
         "nix-homebrew": "nix-homebrew",
         "nix-vscode-extensions": "nix-vscode-extensions",
         "nixpkgs": "nixpkgs",
-        "sops-nix": "sops-nix",
-        "xykongTap": "xykongTap"
+        "sops-nix": "sops-nix"
       }
     },
     "sops-nix": {
@@ -192,22 +191,6 @@
       "original": {
         "owner": "Mic92",
         "repo": "sops-nix",
-        "type": "github"
-      }
-    },
-    "xykongTap": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1786678062,
-        "narHash": "sha256-9hRCRrsXSfCNds4si+/R6iXH8C0C7YS9Hy52per+BYs=",
-        "owner": "xykong",
-        "repo": "homebrew-tap",
-        "rev": "2f8da5fb911877170913c43e323a5bb99405dc5a",
-        "type": "github"
-      },
-      "original": {
-        "owner": "xykong",
-        "repo": "homebrew-tap",
         "type": "github"
       }
     }

@@ -50,11 +50,6 @@
       flake = false;
     };
 
-    xykongTap = {
-      url = "github:xykong/homebrew-tap";
-      flake = false;
-    };
-
     nix-vscode-extensions = {
       url = "github:nix-community/nix-vscode-extensions";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -75,14 +70,12 @@
     homebrew-core,
     homebrew-cask,
     homebrew-bundle,
-    xykongTap,
     nix-vscode-extensions,
     sops-nix,
     ...
   }:
 
   let
-    inherit (nixpkgs) lib;
     system = "aarch64-darwin";
 
     # isWork gates everything that differs on an MDM-managed, supervised Mac.
@@ -119,25 +112,18 @@
             extraEnv = {
               HOMEBREW_ORIGINAL_BREW_FILE = "/opt/homebrew/bin/brew";
             };
-            # The xykong tap exists solely for flux-markdown, which is a beast
-            # cask. Tapping and trusting a third-party tap on the work Mac for
-            # a package it never installs is pure downside: an extra
-            # third-party source in Homebrew's trust store, on a corporate
-            # device, for zero benefit.
-            #
-            # Getting this right BEFORE the first work activation matters,
-            # because trust entries are add-only — dropping one from this list
-            # later does not revoke it, you would need `brew untrust`.
+            # No third-party taps. If one is ever added, gate it (and its
+            # trust entry) behind `!isWork` unless the work Mac needs it:
+            # trust entries are add-only, so removing one later does not
+            # revoke it, you would need `brew untrust`.
             taps = {
               "homebrew/homebrew-core" = homebrew-core;
               "homebrew/homebrew-cask" = homebrew-cask;
               "homebrew/homebrew-bundle" = homebrew-bundle;
-            } // lib.optionalAttrs (!isWork) {
-              "xykong/homebrew-tap" = xykongTap;
             };
             trust = {
               formulae = [];
-              casks = lib.optionals (!isWork) [ "xykong/tap/flux-markdown" ];
+              casks = [];
               commands = [];
               taps = [];
             };

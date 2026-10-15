@@ -63,7 +63,7 @@ That single activation will:
 
 - install and pin **Homebrew** under `/opt/homebrew` (via `nix-homebrew`),
 - create the unified `brew` launcher at `/run/current-system/sw/bin/brew`,
-- apply declarative **tap trust** for the third-party `xykong/tap`,
+- apply declarative **tap trust** for any third-party taps,
 - run `brew bundle` to install every brew and cask in
   [`modules/darwin/homebrew.nix`](modules/darwin/homebrew.nix),
 - install the `just` task runner and the rest of your packages,
@@ -198,14 +198,14 @@ Third-party taps require two coordinated changes (Homebrew 6.0 **tap trust**):
 2. Trust the specific item declaratively:
    ```nix
    nix-homebrew.trust = {
-     casks    = [ "xykong/tap/flux-markdown" ]; # item-level (preferred)
+     casks    = [ "someuser/tap/some-cask" ];  # item-level (preferred)
      formulae = [ ];
      commands = [ ];
      taps     = [ ];                            # or whole-tap trust
    };
    ```
 3. Reference the item **fully-qualified** in `homebrew.nix`
-   (e.g. `"xykong/tap/flux-markdown"`), and make sure the token matches the
+   (e.g. `"someuser/tap/some-cask"`), and make sure the token matches the
    trust entry exactly (mind the hyphen).
 
 > Official taps (`homebrew/core`, `homebrew/cask`, `homebrew/bundle`) are
