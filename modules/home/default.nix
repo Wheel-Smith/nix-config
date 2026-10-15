@@ -1,4 +1,4 @@
-{ inputs, username, isWork, ... }:
+{ lib, inputs, username, isWork, ... }:
 {
   home-manager = {
     useGlobalPkgs = true;
@@ -9,7 +9,11 @@
     # importing it costs nothing on a host that declares no secrets — no launchd
     # agent, no activation step. That lets both hosts carry the module and only
     # the ones with secrets actually do any work.
-    sharedModules = [ inputs.sops-nix.homeManagerModules.sops ];
+    sharedModules = [
+      inputs.sops-nix.homeManagerModules.sops
+    ]
+    # Third-party module, so it is not even imported on the work Mac.
+    ++ lib.optional (!isWork) inputs.sofka.homeManagerModules.default;
 
     # Home modules need the same host context the darwin modules get.
     extraSpecialArgs = { inherit username isWork; };

@@ -51,7 +51,7 @@
         modelRunner = "docker";
         hostname = "";
         kubernetes = {
-          enabled = false; # `colima start --kubernetes` for a k3s cluster
+          enabled = false; # k3s lives in the separate `k8s` profile (kubernetes.nix)
           version = "v1.35.0+k3s1";
           k3sArgs = [ "--disable=traefik" ];
           port = 0;

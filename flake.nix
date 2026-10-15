@@ -57,6 +57,15 @@
       url = "github:Mic92/sops-nix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    # Kubernetes TUI (a Rust rewrite of k9s), not in nixpkgs. Its own flake
+    # ships the package and a home-manager module; beast only, wired in
+    # modules/home/default.nix. Built from source against our nixpkgs.
+    sofka = {
+      url = "github:nklmilojevic/sofka";
+      inputs.nixpkgs.follows = "nixpkgs";
+      inputs.home-manager.follows = "home-manager";
+    };
   };
 
   outputs = inputs@{

@@ -170,6 +170,7 @@
         "nix-homebrew": "nix-homebrew",
         "nix-vscode-extensions": "nix-vscode-extensions",
         "nixpkgs": "nixpkgs",
+        "sofka": "sofka",
         "sops-nix": "sops-nix"
       }
     },
@@ -190,6 +191,29 @@
       "original": {
         "owner": "Mic92",
         "repo": "sops-nix",
+        "type": "github"
+      }
+    },
+    "sofka": {
+      "inputs": {
+        "home-manager": [
+          "home-manager"
+        ],
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1792060588,
+        "narHash": "sha256-nTkeNqI/L2qozhmK2iGV2ssZIqR/htvdxfsAsOJgi4Q=",
+        "owner": "nklmilojevic",
+        "repo": "sofka",
+        "rev": "af569fe5fa0d37f7baa50d3225d946e924aee396",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nklmilojevic",
+        "repo": "sofka",
         "type": "github"
       }
     }
