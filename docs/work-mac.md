@@ -220,8 +220,6 @@ registry, and apps the MDM deploys as `.pkg`/`.dmg` are invisible to it.
   using a personal account on employer source routes their IP through a contract
   they are not party to.
 - **`mas`** — a Managed Apple Account cannot purchase from the Mac App Store.
-- **Personal launchers** — so ⌘Space stays bound to Spotlight, and the
-  `com.apple.symbolichotkeys` unbind is gated off.
 - **Nix-managed VS Code extensions** — `mutableExtensionsDir = true` here, so
   VS Code installs its own. Settings are still managed.
 

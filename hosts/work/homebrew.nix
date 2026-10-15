@@ -51,6 +51,7 @@
       # "slack"
       "spotify"
       "utm"
+      "vicinae"
       "visual-studio-code"
       "vlc"
     ];

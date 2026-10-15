@@ -1,11 +1,11 @@
-{ config, isWork, lib, ... }:
+{ config, lib, ... }:
 
 # Vicinae's useful macOS features (launcher, clipboard history, emoji picker,
 # calculator, and window switching) are enabled out of the box.  Keep the
 # mutable settings file under Vicinae's control so its GUI can write settings,
 # while providing a Nix-managed import for future defaults/customisation.
 {
-  home.file = lib.optionalAttrs (!isWork) {
+  home.file = {
     ".config/vicinae/nix-base.json".text = ''
       {
         // Nix-managed Vicinae defaults live here.
@@ -18,7 +18,7 @@
     '';
   };
 
-  home.activation = lib.optionalAttrs (!isWork) {
+  home.activation = {
     initialiseVicinaeSettings = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
       vicinae_dir="${config.home.homeDirectory}/.config/vicinae"
       vicinae_settings="$vicinae_dir/settings.json"

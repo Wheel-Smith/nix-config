@@ -5,10 +5,8 @@
 #   modules/darwin/firewall.nix — application firewall, stealth mode, guest login
 #   modules/darwin/hostname.nix — the MDM owns the machine name
 #
-# and isWork additionally gates off power.sleep, the screensaver password
-# prompt, and the Spotlight hotkey remains bound because no launcher is
-# installed here. See
-# docs/work-mac.md.
+# and isWork additionally gates off power.sleep and the screensaver password
+# prompt. See docs/work-mac.md.
 #
 # On the name specifically: with networking.* unset, nix-darwin issues no
 # `scutil --set` at all, so the machine keeps whatever the MDM's enrollment

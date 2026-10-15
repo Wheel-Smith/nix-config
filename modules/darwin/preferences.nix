@@ -140,17 +140,10 @@
 # Prevent Photos/Image Capture from opening automatically when devices are plugged in.
         disableHotPlug = true;
       };
-    }
-# CustomUserPreferences is a freeform attrset, not a set of typed options, so
-# lib.mkIf inside it would never be evaluated by the module system. Merge with
-# optionalAttrs instead.
-    // lib.optionalAttrs (!isWork) {
-# Unbind Cmd+Space from Spotlight so Vicinae can use it.
+
+# Unbind Cmd+Space from Spotlight so Vicinae can use it (both Macs).
 # Do NOT disable hotkey 65, because that is Option+Cmd+Space
 # for Finder search window.
-#
-# beast-only: the work Mac has no launcher, so unbinding Cmd+Space there would
-# leave the shortcut doing nothing at all.
       "com.apple.symbolichotkeys" = {
         AppleSymbolicHotKeys = {
           "64" = { enabled = false; };
