@@ -8,8 +8,12 @@
 # for the Host blocks: it strips the parts the template and Colima add, and if
 # what is left differs from the payload, shows the diff and re-encrypts it.
 #
+# Once the hosts are safely in the payload, it also deletes LazySSH's own
+# backups of ~/.ssh/config: they would only duplicate what git now keeps, and
+# LazySSH writes a new one on every save.
+#
 # Run standalone or via `just switch`, which runs it first. It does nothing
-# where ~/.ssh/config is not a sops-rendered regular file (the work Mac).
+# where Home Manager links ~/.ssh/config into the Nix store (the work Mac).
 
 set -euo pipefail
 
@@ -17,9 +21,18 @@ cd "$(dirname "$0")/.."
 secret=secrets/personal.yaml
 live="$HOME/.ssh/config"
 
-if [ ! -f "$secret" ] || [ ! -f "$live" ] || [ -L "$live" ]; then
-  exit 0
-fi
+# After a switch the live file is a symlink to the sops-nix rendering, and
+# LazySSH may replace it with a regular file or write through it; both count.
+case "$(readlink -f "$live" 2>/dev/null)" in
+  "" | /nix/store/*) exit 0 ;;
+esac
+[ -f "$secret" ] || exit 0
+
+# config-<ms>-lazyssh.backup on every save (LazySSH keeps the last 10), plus
+# config.original.backup from its first run.
+remove_backups() {
+  rm -f "$HOME"/.ssh/config-*-lazyssh.backup "$HOME"/.ssh/config.original.backup
+}
 
 # One blank line between Host blocks and none at either end, so spacing alone
 # (LazySSH appends blocks without a gap) never counts as a change.
@@ -47,6 +60,7 @@ current="$(sops --decrypt --extract '["ssh_config"]' "$secret" | normalize)"
 wanted="$(host_blocks | normalize)"
 
 if [ "$current" = "$wanted" ]; then
+  remove_backups
   printf '\033[32m✓ ssh hosts in sync\033[0m  (%s)\n' "$secret"
   exit 0
 fi
@@ -70,4 +84,5 @@ case "$answer" in
 esac
 
 printf '%s\n' "$wanted" | jq -Rs . | sops set --value-stdin "$secret" '["ssh_config"]'
+remove_backups
 printf '\033[32m✓ saved\033[0m  commit %s to keep it\n' "$secret"
