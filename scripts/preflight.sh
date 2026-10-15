@@ -270,7 +270,11 @@ head_ "8. Secrets readiness (sops-nix)"
 # never run. Catching it here costs nothing; catching it mid-switch costs an
 # afternoon.
 repo="$(cd "$(dirname "$0")/.." 2>/dev/null && pwd)"
-if ! ls "$repo"/secrets/*.yaml >/dev/null 2>&1; then
+if [ "$HOST" = "work" ]; then
+  # modules/home/secrets.nix declares secrets only when !isWork, so sops-nix
+  # does nothing on the work Mac and it needs no age key.
+  ok "work declares no secrets — no age key needed"
+elif ! ls "$repo"/secrets/*.yaml >/dev/null 2>&1; then
   ok "no encrypted secrets in the repo yet — nothing to be a recipient of"
 else
   agekey="$HOME/.config/sops/age/keys.txt"
