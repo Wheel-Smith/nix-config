@@ -15,24 +15,22 @@
     };
 
 #    nix-homebrew.url = "github:zhaofengli-wip/nix-homebrew";
-# Keep the Homebrew RUNTIME at least as new as the homebrew-core and
-# homebrew-cask inputs below. Those taps move independently, and formula/cask
-# definitions adopt new DSL keywords as they go — an older brew runtime then
-# rejects them outright.
+# The Homebrew RUNTIME must stay at least as new as the homebrew-core and
+# homebrew-cask inputs below: formula/cask definitions adopt new DSL keywords
+# as they go, and an older brew rejects them outright. A fixed version tag here
+# drifted behind twice (6.0.13 could not parse `node`, 6.0.17 not `dotnet`),
+# and since `brew bundle` runs BEFORE home-manager in the activation script, an
+# unreadable formula can abort the whole switch halfway.
 #
-# This is not theoretical: pinned at 6.0.13 the runtime could not parse
-# homebrew-core's `node` ("unknown keyword: :overwrite"), so `opencode`, which
-# depends on it, could not be resolved. `brew bundle` exited non-zero, and
-# because it runs BEFORE home-manager in the activation script, the whole
-# switch aborted — leaving /run/current-system and ~/.zshenv on the previous
-# generation while the system profile had already moved forward.
-#
-# If a `just switch` ever dies in "Homebrew bundle...", check for unreadable
-# formulae first and bump this pin before anything else.
+# So it tracks brew's master branch: every `nix flake update` moves the runtime
+# together with the taps, and homebrew-core's CI tests against master. The
+# exact commit is still locked in flake.lock. If a new brew ever breaks the
+# switch, pin a release tag here (`github:Homebrew/brew/7.0.9`) until it is
+# fixed.
 
     nix-homebrew = {
        url = "github:zhaofengli/nix-homebrew";
-       inputs.brew-src.url = "github:Homebrew/brew/6.0.17";
+       inputs.brew-src.url = "github:Homebrew/brew";
      };
 
     homebrew-core = {
