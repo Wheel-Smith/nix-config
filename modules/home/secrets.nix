@@ -50,6 +50,11 @@
   # LazySSH reads ~/.ssh/config itself but does not follow OpenSSH Include
   # directives. Render one ordinary config file at activation so it sees the
   # encrypted personal hosts, while only a SOPS placeholder is stored in Nix.
+  #
+  # LazySSH also writes to this rendered file, and the next activation would
+  # overwrite its edits, so `just switch` first runs scripts/ssh-sync.sh to
+  # copy the Host blocks back into the payload. That script strips the fixed
+  # text below by pattern: keep the two in step.
   sops.templates = lib.optionalAttrs (!isWork) {
     ssh_config = {
       path = "${config.home.homeDirectory}/.ssh/config";

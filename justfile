@@ -21,6 +21,9 @@ build:
 diff:
     nix store diff-closures /run/current-system ./result
 
+# ssh-sync runs first because activation re-renders ~/.ssh/config on beast,
+# which would otherwise discard hosts added or edited in LazySSH.
+#
 # Apply the configuration, then confirm the activation actually finished.
 #
 # The drift check is two symlink reads, so it cannot produce a false positive.
@@ -29,7 +32,7 @@ diff:
 # likely `brew bundle`), the two disagree and the switch has silently applied
 # only part of itself. That state is otherwise invisible until something
 # downstream looks stale days later.
-switch:
+switch: ssh-sync
     sudo darwin-rebuild switch --flake .#{{host}}
     @./scripts/switch-applied.sh
 
@@ -50,6 +53,10 @@ secrets file="personal":
 # Show what a secret currently decrypts to, without editing it
 secrets-show file="personal":
     @sops --decrypt secrets/{{file}}.yaml
+
+# Save LazySSH's host edits into secrets/personal.yaml (also runs before switch)
+ssh-sync:
+    @./scripts/ssh-sync.sh
 
 # Show which keys can decrypt a secret
 secrets-keys file="personal":
