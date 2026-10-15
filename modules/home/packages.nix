@@ -39,7 +39,17 @@ let
     wireshark
     yt-dlp
   ];
+
+  # Cloud tenant work from the terminal. Generic on purpose: this repo is
+  # public, and these say nothing about the employer that "uses Azure" does
+  # not (docs/work-mac.md, anonymization contract).
+  workOnly = with pkgs; [
+    azure-cli # az: Resource Graph, Entra, `az rest` for any Graph call
+    azure-storage-azcopy # bulk copy to/from storage (log exports)
+    bicep # read and lint the IaC that deploys cloud resources
+    kubelogin # Entra sign-in for AKS clusters (kubectl credential plugin)
+  ];
 in
 {
-  home.packages = common ++ (if isWork then [ ] else personalOnly);
+  home.packages = common ++ (if isWork then workOnly else personalOnly);
 }
