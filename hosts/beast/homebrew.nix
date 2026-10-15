@@ -14,7 +14,8 @@
       # "llama.cpp"
       "mole"
       # "opencode"
-      "powershell"
+      # powershell comes from nixpkgs (hosts/beast/packages.nix): the formula
+      # drags in a 670 MB dotnet SDK, the nixpkgs build is self-contained.
     ];
 
     casks = [
@@ -38,6 +39,8 @@
       "libreoffice"
       "localsend"
       "moonlight"
+      # Models live in ~/.cache/openwhispr and survive a reinstall.
+      "openwhispr"
       # "nordvpn"
       "obsidian"
       "ollama-app"
