@@ -1,4 +1,4 @@
-{ username, ... }:
+{ lib, username, isWork, ... }:
 {
   imports = [
     ./packages.nix
@@ -23,7 +23,9 @@
     ./vicinae.nix
     ./omniwm
     ./secrets.nix
-  ];
+  ]
+  # Browser tests for personal projects; nothing on the work Mac needs them.
+  ++ lib.optional (!isWork) ./playwright.nix;
 
   # Darwin defaults to ~/Library/Application Support for app configs, and several
   # home-manager modules branch on this flag to decide where to write. lazygit is
