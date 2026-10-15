@@ -16,4 +16,16 @@ final: prev: {
       hash = "sha256-oV/KNBGojdBviTUyjChiY9V6RMe8wiVUd+KTA/qUzM4=";
     };
   });
+
+  # debugpy (pulled in by the ms-python.python VS Code extension) builds from
+  # source on darwin, and test_lldb_command fails there: it attaches lldb to a
+  # live process, which the build sandbox forbids. The other 965 tests pass.
+  # Drop once nixpkgs disables it upstream.
+  pythonPackagesExtensions = prev.pythonPackagesExtensions ++ [
+    (_: pyPrev: {
+      debugpy = pyPrev.debugpy.overridePythonAttrs (old: {
+        disabledTests = (old.disabledTests or [ ]) ++ [ "test_lldb_command" ];
+      });
+    })
+  ];
 }
