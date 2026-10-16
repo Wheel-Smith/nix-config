@@ -64,11 +64,13 @@ let
   ];
 
   # Both corporate apps are MDM-deployed, not in our Homebrew list. The old
-  # Teams bundle id is kept so the rule survives either build.
+  # Teams bundle id is kept so the rule survives either build. Outlook shares
+  # the S workspace with Slack, so mail and chat sit side by side.
+  slackWorkspace = toString (lib.findFirst (ws: ws.letter == "S") (throw "omniwm: no S letter workspace") letterWorkspaces).number;
   workWindowRules = [
     (rule "com.microsoft.teams2" "4")
     (rule "com.microsoft.teams" "4")
-    (rule "com.microsoft.Outlook" "5")
+    (rule "com.microsoft.Outlook" slackWorkspace)
   ];
 
   # Action id -> chord. Anything not listed keeps OmniWM's default binding,
@@ -107,7 +109,9 @@ let
     "moveWindowToMonitor.right" = "Control+Option+Shift+L";
 
     "workspaceBackAndForth" = "Option+Tab";
-    "moveWorkspaceToMonitor.right" = "Option+Shift+Tab";
+    # Option+Shift+Tab is an skhd toggle (modules/darwin/skhd.nix) that sends
+    # the workspace to whichever monitor is the other one.
+    "moveWorkspaceToMonitor.right" = "Unassigned";
 
     # Dwindle. Every tile is a split of its parent, horizontal or vertical.
     # toggleSplit flips the direction of the focused window's split, swapSplit
