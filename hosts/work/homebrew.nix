@@ -46,6 +46,7 @@
       # LuLu and BlockBlock are not here).
       "apparency"
       "knockknock"
+      "microsoft-remote-help"
       "suspicious-package"
       "taskexplorer"
       # "slack"
