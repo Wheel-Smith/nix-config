@@ -16,27 +16,91 @@
 {
   services.colima = {
     enable = true;
-    # `colima start` writes its flags back into colima.yaml, which is a
-    # read-only Nix file here, so a plain start dies with "permission
-    # denied". The wrapper makes every start pass --save-config=false;
-    # everything else (completions included) is the stock package.
-    package = pkgs.symlinkJoin {
-      name = "colima-nix-config";
-      paths = [ pkgs.colima ];
-      meta.mainProgram = "colima";
-      postBuild = ''
-        rm $out/bin/colima
-        cat > $out/bin/colima <<EOF
-        #!${pkgs.runtimeShell}
-        if [ "\$1" = start ]; then
+    # The stock package (completions included) behind a wrapper, for two
+    # things Colima gets wrong:
+    #
+    # 1. `colima start` writes its flags back into colima.yaml, which is a
+    #    read-only Nix file here, so a plain start dies with "permission
+    #    denied". Every start gets --save-config=false.
+    # 2. Colima only touches the docker/kubectl contexts when a VM actually
+    #    starts or stops, and never falls back to another running VM. So
+    #    `colima stop -p k8s` left docker on the dead `default` context
+    #    (/var/run/docker.sock) while the `default` VM was still up, and
+    #    `colima start` then said "already running" and fixed nothing. After
+    #    every start/restart/stop/delete the wrapper points docker at the
+    #    profile just started, or else at a VM that is still running (the
+    #    `default` one first), and drops the kubectl context of a cluster
+    #    that is gone, so the prompt's ☸ segment only shows a live cluster.
+    package =
+      let
+        colima = lib.getExe pkgs.colima;
+        wrapper = pkgs.writeShellScript "colima" ''
+          colima=${colima}
+          jq=${lib.getExe pkgs.jq}
+          docker=${lib.getExe' pkgs.docker-client "docker"}
+
+          cmd=$1
+          case $cmd in
+            start) "$colima" start --save-config=false "''${@:2}" ;;
+            restart | stop | delete) "$colima" "$@" ;;
+            *) exec "$colima" "$@" ;;
+          esac
+          rc=$?
+
+          # The profile the command was aimed at: -p/--profile, or a
+          # positional argument naming an existing profile.
+          profiles=$("$colima" list -j 2>/dev/null)
+          names=$(printf '%s\n' "$profiles" | "$jq" -r '.name')
+          running=$(printf '%s\n' "$profiles" | "$jq" -r 'select(.status == "Running") | .name')
+          profile=default
           shift
-          exec ${lib.getExe pkgs.colima} start --save-config=false "\$@"
-        fi
-        exec ${lib.getExe pkgs.colima} "\$@"
-        EOF
-        chmod +x $out/bin/colima
-      '';
-    };
+          while [ $# -gt 0 ]; do
+            case $1 in
+              -p | --profile) profile=$2; shift ;;
+              --profile=*) profile=''${1#--profile=} ;;
+              -*) ;;
+              *) printf '%s\n' "$names" | grep -qxF -- "$1" && profile=$1 ;;
+            esac
+            shift
+          done
+
+          ctx() { if [ "$1" = default ]; then echo colima; else echo "colima-$1"; fi; }
+          is_running() { printf '%s\n' "$running" | grep -qxF -- "$1"; }
+          use_docker() {
+            [ "$("$docker" context show 2>/dev/null)" = "$1" ] && return
+            "$docker" context use "$1" >/dev/null 2>&1 && echo "docker context: $1" >&2
+          }
+
+          if is_running "$profile"; then
+            use_docker "$(ctx "$profile")"
+            # Already-running k8s profile: Colima skipped the kubectl switch too.
+            if command -v kubectl >/dev/null \
+              && kubectl config get-contexts -o name 2>/dev/null | grep -qxF "colima-$profile"; then
+              kubectl config use-context "colima-$profile" >/dev/null
+            fi
+          else
+            fallback=default
+            is_running default || fallback=$(printf '%s\n' "$running" | head -n1)
+            if [ -n "$fallback" ]; then use_docker "$(ctx "$fallback")"; fi
+            # Hide a stopped cluster: unset the current context (it stays in
+            # ~/.kube/config; the next start selects it again).
+            if command -v kubectl >/dev/null \
+              && [ "$(kubectl config current-context 2>/dev/null)" = "colima-$profile" ]; then
+              kubectl config unset current-context >/dev/null
+            fi
+          fi
+          exit $rc
+        '';
+      in
+      pkgs.symlinkJoin {
+        name = "colima-nix-config";
+        paths = [ pkgs.colima ];
+        meta.mainProgram = "colima";
+        postBuild = ''
+          rm $out/bin/colima
+          cp ${wrapper} $out/bin/colima
+        '';
+      };
     profiles.default = {
       isActive = true; # `docker context use colima` on start
       isService = false;

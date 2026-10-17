@@ -26,11 +26,13 @@
 # Starting the k8s profile also points the docker CLI at it (autoActivate),
 # which is what kind needs: it creates its "nodes" through `docker`, and
 # images you `docker build` there can go straight into kind with
-# `kind load docker-image`. Back to the everyday VM: `docker context use
-# colima` (or just stop k8s and `colima start`).
+# `kind load docker-image`. `colima stop -p k8s` points docker back at the
+# everyday VM if it is running (the colima wrapper in containers.nix).
 #
 # ~/.kube/config is written by Colima and kind and is deliberately NOT
-# managed here: contexts come and go with every cluster you create.
+# managed here: contexts come and go with every cluster you create. Stopping
+# the k8s profile unsets the current context (the wrapper again), so the
+# prompt's ☸ segment disappears; the next start selects it again.
 let
   # Same keys as the default profile (every key must be present, see
   # containers.nix), with only the differences spelled out.
