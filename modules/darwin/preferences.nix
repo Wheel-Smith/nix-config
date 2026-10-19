@@ -93,6 +93,9 @@
 # AppleAccentColor: -1 multicolour, 0 red, 1 orange, 2 yellow,
 #                    3 green, 4 blue, 5 purple, 6 pink, 7 graphite.
       "NSGlobalDomain" = {
+# External mouse pointer speed, same slider position as the trackpad. Not a
+# typed option (only the trackpad one is), so it is written here as a raw key.
+        "com.apple.mouse.scaling" = 2.0;
         AppleAccentColor = 1;
         AppleHighlightColor = "1.000000 0.874510 0.701961 Orange";
       };
