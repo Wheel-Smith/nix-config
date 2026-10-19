@@ -22,6 +22,7 @@
 
     brews = [
       "lazyssh"
+      "sofka" # Kubernetes TUI; a formula, not a cask
     ];
 
     casks = [
