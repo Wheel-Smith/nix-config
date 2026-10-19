@@ -147,9 +147,15 @@
 # Unbind Cmd+Space from Spotlight so Vicinae can use it (both Macs).
 # Do NOT disable hotkey 65, because that is Option+Cmd+Space
 # for Finder search window.
+#
+# Also unbind Ctrl+Up (32, Mission Control) and Ctrl+Down (33, App Exposé),
+# so tmux gets them for prefix + Ctrl+Up/Down pane resizing. Mission
+# Control stays on F3 and the trackpad swipe.
       "com.apple.symbolichotkeys" = {
         AppleSymbolicHotKeys = {
           "64" = { enabled = false; };
+          "32" = { enabled = false; };
+          "33" = { enabled = false; };
         };
       };
     };
