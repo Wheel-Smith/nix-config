@@ -258,19 +258,27 @@ let
       displayName = ws.letter;
     }) letterWorkspaces;
 
+  # Upstream's defaults carry compatibility rules (minimum sizes for apps
+  # that misbehave when tiled small). OmniWM applies only the FIRST rule for a
+  # bundle id, so a second rule of ours for the same app (Spotify, Ghostty,
+  # Messages, Discord, Outlook) was silently ignored. Merge ours into the
+  # upstream rule instead (keeping its id and sizes), and append the rest.
+  ourAppRules =
+    floatWindowRules
+    ++ sharedWindowRules
+    ++ letterWindowRules
+    ++ (if isWork then workWindowRules else personalWindowRules);
+  hasUpstreamRule = r: lib.any (d: d.bundleId == r.bundleId) defaults.appRules;
+  mergedAppRules =
+    map (d: lib.foldl' (acc: r: if r.bundleId == d.bundleId then acc // r else acc) d ourAppRules) defaults.appRules
+    ++ lib.filter (r: !hasUpstreamRule r) ourAppRules;
+
   settings =
     lib.recursiveUpdate defaults (checkKeys [ ] defaults overrides)
     // {
       hotkeys = mergedHotkeys;
       workspaces = mergedWorkspaces;
-      # Upstream's defaults carry compatibility rules (minimum sizes for apps
-      # that misbehave when tiled small); keep them and append ours.
-      appRules =
-        defaults.appRules
-        ++ floatWindowRules
-        ++ sharedWindowRules
-        ++ letterWindowRules
-        ++ (if isWork then workWindowRules else personalWindowRules);
+      appRules = mergedAppRules;
     };
 in
 {
