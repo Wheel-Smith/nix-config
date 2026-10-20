@@ -8,6 +8,7 @@
     ../../modules/darwin/hostname.nix
     ./dock.nix
     ./homebrew.nix
+    ./login-items.nix
     ./packages.nix
     ../../modules/home
   ];
