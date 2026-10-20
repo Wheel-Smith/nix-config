@@ -10,10 +10,44 @@
     baseIndex = 1;
     clock24 = true;
 
+    # Plugins load BEFORE extraConfig, so anything they read or patch at load
+    # time goes in their own extraConfig: prefix-highlight and continuum both
+    # rewrite status-right (continuum's 15-minute auto-save is a hook in it), so
+    # the status bar is set first and continuum loads last. Setting status-right
+    # in extraConfig instead silently disabled auto-save and restore.
     plugins = with pkgs.tmuxPlugins; [
       resurrect
-      continuum
-      prefix-highlight
+      {
+        plugin = prefix-highlight;
+        extraConfig = ''
+          # Status bar theme
+          set -g status-style "bg=#282828,fg=#ebdbb2"
+          set -g status-left "#[fg=#282828,bg=#d65d0e] #S #[fg=#d65d0e,bg=#282828] "
+          set -g status-right "#[fg=#928374]#{prefix_highlight} %H:%M "
+          set -g window-status-format "#[fg=#928374] #I:#W "
+          set -g window-status-current-format "#[fg=#d65d0e,bold] #I:#W#{?window_zoomed_flag, ⇪ , } "
+          set -g window-status-separator " "
+
+          set -g pane-border-style "fg=#282828"
+          set -g pane-active-border-style "fg=#d65d0e"
+          set -g message-style "bg=#282828,fg=#ebdbb2"
+          set -g message-command-style "bg=#282828,fg=#ebdbb2"
+          set -g mode-style "bg=#d65d0e,fg=#282828"
+          set -g clock-mode-colour "#d65d0e"
+
+          # Prefix highlight settings
+          set -g @prefix_highlight_show_copy_mode 'on'
+          set -g @prefix_highlight_copy_mode_attr 'fg=#ebdbb2,bg=#d65d0e'
+        '';
+      }
+      {
+        plugin = continuum;
+        extraConfig = ''
+          # Continuum settings
+          set -g @continuum-save-interval '15'
+          set -g @continuum-restore 'on'
+        '';
+      }
     ];
 
     extraConfig = ''
@@ -67,21 +101,6 @@
       bind-key Left select-pane -L
       bind-key Right select-pane -R
 
-      # Status bar theme
-      set -g status-style "bg=#282828,fg=#ebdbb2"
-      set -g status-left "#[fg=#282828,bg=#d65d0e] #S #[fg=#d65d0e,bg=#282828] "
-      set -g status-right "#[fg=#928374]#{prefix_highlight} %H:%M "
-      set -g window-status-format "#[fg=#928374] #I:#W "
-      set -g window-status-current-format "#[fg=#d65d0e,bold] #I:#W#{?window_zoomed_flag, ⇪ , } "
-      set -g window-status-separator " "
-
-      set -g pane-border-style "fg=#282828"
-      set -g pane-active-border-style "fg=#d65d0e"
-      set -g message-style "bg=#282828,fg=#ebdbb2"
-      set -g message-command-style "bg=#282828,fg=#ebdbb2"
-      set -g mode-style "bg=#d65d0e,fg=#282828"
-      set -g clock-mode-colour "#d65d0e"
-
       # Focus events and passthrough
       set -g focus-events on
       set -g allow-passthrough on
@@ -92,14 +111,6 @@
 
       # Activity indicator
       set -g window-status-activity-style "fg=#fb4934"
-
-      # Continuum settings
-      set -g @continuum-save-interval '15'
-      set -g @continuum-restore 'on'
-
-      # Prefix highlight settings
-      set -g @prefix_highlight_show_copy_mode 'on'
-      set -g @prefix_highlight_copy_mode_attr 'fg=#ebdbb2,bg=#d65d0e'
     '';
   };
 }
