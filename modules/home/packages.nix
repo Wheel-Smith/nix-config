@@ -36,6 +36,7 @@ let
     cmatrix
     nmap
     tailscale
+    tectonic # self-contained LaTeX engine, pandoc's --pdf-engine
     wireshark
     yt-dlp
   ];
@@ -47,6 +48,7 @@ let
     azure-cli # az: Resource Graph, Entra, `az rest` for any Graph call
     azure-storage-azcopy # bulk copy to/from storage (log exports)
     bicep # read and lint the IaC that deploys cloud resources
+    duckdb # SQL over local CSV/JSON/Parquet files
     kubelogin # Entra sign-in for AKS clusters (kubectl credential plugin)
   ];
 in

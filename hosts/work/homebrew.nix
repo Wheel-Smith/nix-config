@@ -23,6 +23,7 @@
     brews = [
       "lazyssh"
       "sofka" # Kubernetes TUI; a formula, not a cask
+      "trufflehog" # secret scanner; formula tracks upstream releases closely
     ];
 
     casks = [
