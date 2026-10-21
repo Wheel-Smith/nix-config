@@ -100,6 +100,69 @@
         AppleHighlightColor = "1.000000 0.874510 0.701961 Orange";
       };
 
+# Vorssaint (menu bar toolkit, cask on both hosts). A fresh install turns almost
+# every one of its ~75 features on, including a window layout manager and an
+# app switcher that would fight OmniWM and skhd, and clipboard history and key
+# remapping that have no business on a managed Mac. So the feature set is
+# declared here: exactly the `enabled` list below is installed, everything else
+# is switched off, and a switch re-applies it (changes made in the app's own
+# Features page are reset to this list). Add or remove a name to change it.
+# Keys are `featureAvailable.<feature>`; the app reads them from its
+# preferences domain com.vorssaint.utils, so restart the app after a switch.
+#
+# Screenshot is bound to Cmd+Shift+2 and screen recording to Cmd+Shift+1.
+# Shortcuts are stored as "<modifiers>:<key code>"; key code 19 is the "2" key
+# and 18 the "1" key. With the capture menu off, each shortcut starts its
+# capture directly instead of offering the screenshot / recording / text /
+# colour chooser.
+      "com.vorssaint.utils" =
+        let
+          enabled = [
+            "smoothScroll" "mouseAcceleration" "mixer" "keepAwake" "screenshot" "screenRecorder"
+            "portManager" "notch" "notchCalendar" "notchNotifications" "notchGestures" "notchTimer"
+            "notchAccessories" "notchLyrics" "notchQueue" "notchLiveEqualizer" "notchDownloads"
+            "notchWatch" "notchMascot" "monitorCPU" "monitorGPU" "monitorMemory" "monitorNetwork"
+            "monitorDisk" "monitorPower"
+          ];
+          features = [
+            "switcher" "dockPreview" "dockClick" "windowMaximizer" "windowLayout" "autoQuit"
+            "spacesOrder" "scrollInverter" "scrollHorizontal" "focusFollowsMouse" "smoothScroll"
+            "linearScroll" "mouseAcceleration" "mouseNavigation" "mouseButtonShortcuts"
+            "middleClick" "mouseClickDebounce" "keyboardDebounce" "textSnippets" "superKey"
+            "quitWindowProtection" "clipboardHistory" "pastePlain" "finderCutPaste" "finderRename"
+            "shelf" "urlCleaner" "diskImageInstaller" "mixer" "soundOutputSwitcher" "audioPriority"
+            "micMute" "musicBlock" "keepAwake" "brightness" "extraBrightness" "bluetoothSleep"
+            "quickLauncher" "quickToggles" "colorPicker" "screenOCR" "cleaningMode" "mediaTools"
+            "cleaner" "uninstaller" "homebrew" "appUpdates" "screenshot" "cameraPreview"
+            "radialMenu" "scratchpad" "commandBar" "screenRecorder" "wallpaper" "killProcess"
+            "portManager" "notch" "notchCalendar" "notchNotifications" "notchGestures" "notchTimer"
+            "notchAccessories" "notchLyrics" "notchQueue" "notchLiveEqualizer" "notchDownloads"
+            "notchAgents" "notchWatch" "notchMascot" "monitorCPU" "monitorGPU" "monitorMemory"
+            "monitorNetwork" "monitorDisk" "monitorPower" "connectedDevices" "fanControl"
+          ];
+        in
+        lib.listToAttrs (map
+          (f: lib.nameValuePair "featureAvailable.${f}" (lib.elem f enabled))
+          features)
+        // {
+          screenshotShortcutEnabled = true;
+          screenshotShortcut = "shift+command:19";
+          screenshotShowCaptureMenuOnShortcut = false;
+          recorderShortcutEnabled = true;
+          recorderShortcut = "shift+command:18";
+          recorderShowCaptureMenuOnShortcut = false;
+          # Notch mascot: the orange robot.
+          notchMascotPalette = "orange";
+          notchMascotShape = "squircle";
+          notchMascotStyle = "robot";
+          # Edge-drag and option-key tiling, separate from the Window Layout
+          # feature above. Not set in the app by default, so they are written
+          # off here to keep windows floating.
+          EnableTilingByEdgeDrag = false;
+          EnableTopTilingByEdgeDrag = false;
+          EnableTilingOptionAccelerator = false;
+        };
+
 # NEW: Keyboard input sources = U.S. + Estonian ONLY (plus the standard
 # character-palette input method macOS keeps). IDs captured from this machine
 # via: defaults read com.apple.HIToolbox AppleEnabledInputSources

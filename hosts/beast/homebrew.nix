@@ -52,7 +52,6 @@
       # "chang-07/tap/rascal"
       "reminders-menubar"
       "rustdesk"
-      "shottr"
       "slack"
       "spotify"
       # "stats"
@@ -63,6 +62,9 @@
       "vicinae"
       "visual-studio-code"
       "vlc"
+      # Menu bar toolkit; its feature set is declared (see
+      # modules/darwin/preferences.nix).
+      "vorssaint"
       "whatsapp"
       "wireshark-app"
     ];

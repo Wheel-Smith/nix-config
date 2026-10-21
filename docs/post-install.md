@@ -37,7 +37,6 @@ Likely permissions:
   Overview thumbnails). Re-grant after each version bump: the grant is tied to
   the /nix/store path. Keep "Displays have separate Spaces" ON.
 - skhd: Accessibility (letter workspaces do nothing until granted).
-- Shottr: Screen Recording, Accessibility if needed
 - RustDesk: Screen Recording, Accessibility, Full Disk Access as needed
 - Ghostty: Developer tools / local network prompts only if needed
 - Orbstack: privileged helper/network prompts as prompted

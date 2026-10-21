@@ -56,6 +56,10 @@
       "vicinae"
       "visual-studio-code"
       "vlc"
+      # Menu bar toolkit; its feature set is declared (see
+      # modules/darwin/preferences.nix). A plain app: no installer package,
+      # helper or system/network extension, signed and notarized.
+      "vorssaint"
     ];
   };
 }

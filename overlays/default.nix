@@ -17,6 +17,16 @@ final: prev: {
     };
   });
 
+  # bicep builds from source on this Mac (not yet in the binary cache for every
+  # release), and its test Basic_formatting_works expects "0.3s" but .NET reads
+  # the macOS system locale (Estonian) and prints "0,3s". The other 73 tests
+  # pass, but a test filter does not reach dotnetCheckHook, so the unit tests
+  # are skipped for this package only. Drop once the release is cached or
+  # nixpkgs skips the test.
+  bicep = prev.bicep.overrideAttrs (_: {
+    doCheck = false;
+  });
+
   # debugpy (pulled in by the ms-python.python VS Code extension) builds from
   # source on darwin, and test_lldb_command fails there: it attaches lldb to a
   # live process, which the build sandbox forbids. The other 965 tests pass.

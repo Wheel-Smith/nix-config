@@ -52,6 +52,7 @@ let
     "ch.protonvpn.mac"
     "org.eduvpn.app"
     "io.tailscale.ipn.macsys"
+    "com.vorssaint.utils" # Vorssaint, including its settings window
   ];
 
   letterWindowRules = lib.concatMap (ws:
@@ -197,11 +198,26 @@ let
       inactiveIconOpacity = 0.5;
     };
     statusBar.showWorkspaceName = true;
+
+    # Monitor roles. Without a ranking, OmniWM's Main/Secondary follow whichever
+    # display macOS currently gives the menu bar, and with two external monitors
+    # that flips after a screen lock or display sleep: every workspace homed on
+    # Main/Secondary then swaps monitors and windows (Outlook, the private Brave
+    # window) land on the wrong screen. Ranking the two by name makes the roles
+    # independent of macOS: Main is the vertical DELL U2422HE, Secondary the
+    # horizontal DELL U2422H. Names are used (not display UUIDs) so no
+    # hardware identifier lands in this public repo; they are unique today, so if
+    # a second identical model ever joins, record its displayUUID here.
+    monitors.ranking = [
+      { name = "DELL U2422HE"; }
+      { name = "DELL U2422H"; }
+    ];
   };
 
   # Keys OmniWM accepts but leaves out of its defaults while unset (optional
   # in its schema). Add to this when setting another optional key.
   optionalKeys = [
+    "monitors"
     "borders.darkColor" "workspaceBar.inactiveIconOpacity" "workspaceBar.accentColor"
   ];
 

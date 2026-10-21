@@ -66,6 +66,15 @@
       inputs.nixpkgs.follows = "nixpkgs";
       inputs.home-manager.follows = "home-manager";
     };
+
+    # azure-cli depends on python fabric, which nixpkgs marks broken since the
+    # invoke 3 bump (https://github.com/fabric/fabric/issues/2376, 2026-10-20), so
+    # evaluating the whole system fails. Only azure-cli comes from this pinned
+    # revision (the last one where fabric was fine); the rest of nixpkgs keeps
+    # upgrading. The rev is in the URL so `nix flake update` never moves it.
+    # REMOVE this input and the azure-cli overlay below once nixpkgs builds
+    # fabric again (check with `just update-input nixpkgs`, then build).
+    nixpkgs-azure.url = "github:NixOS/nixpkgs/f20cd90e28fe0403873f473b29e42662cd86e8c4";
   };
 
   outputs = inputs@{
@@ -103,6 +112,10 @@
           nixpkgs.overlays = [
             nix-vscode-extensions.overlays.default
             (import ./overlays)
+            # See the nixpkgs-azure input: azure-cli from the pinned revision.
+            (_final: _prev: {
+              azure-cli = inputs.nixpkgs-azure.legacyPackages.${system}.azure-cli;
+            })
           ];
           nixpkgs.config.allowUnfree = true;
           system.primaryUser = username;
