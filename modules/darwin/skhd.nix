@@ -15,16 +15,41 @@ let
   # overlaid derivation home-manager installs (useGlobalPkgs).
   omniwmctl = "${pkgs.omniwm}/bin/omniwmctl";
 
-  # Send the current workspace, windows and all, to the other monitor. The
-  # workspace move only takes a direction, and omniwmctl exits 1 (not_found)
-  # when there is no monitor that way, so try right and fall back to left.
+  # Send the current workspace, windows and all, to the other monitor,
+  # wherever it is. omniwmctl only moves a workspace in a direction, so the
+  # direction comes from the displays' frames: from the centre of the
+  # workspace's display to the centre of the next display in OmniWM's list
+  # (with three or more, repeated presses cycle through them), along whichever
+  # axis is further apart. OmniWM's frames use macOS's y-up coordinates. If
+  # that direction is still refused (odd diagonal layouts), try the rest.
   # Whatever was showing on the target monitor stays parked there. --force
   # because every workspace is pinned to a monitor in settings.toml, and a
   # pinned workspace otherwise refuses to move (workspace_assignment_conflict).
+  otherMonitorDirection = pkgs.writeText "other-monitor-direction.jq" ''
+    [.result.payload.displays[]
+      | {id, x: (.frame.x + .frame.width / 2), y: (.frame.y + .frame.height / 2)}] as $d
+    | ($d | map(.id) | index($cur)) as $i
+    | select($i != null and ($d | length) > 1)
+    | $d[$i] as $a | $d[($i + 1) % ($d | length)] as $b
+    | ($b.x - $a.x) as $dx | ($b.y - $a.y) as $dy
+    | if ($dx | fabs) >= ($dy | fabs)
+      then (if $dx > 0 then "right" else "left" end)
+      else (if $dy > 0 then "up" else "down" end) end
+  '';
+
   toggleMonitor = pkgs.writeShellScript "omniwm-toggle-monitor" ''
-    ws=$(${omniwmctl} query active-workspace --json | ${pkgs.gnused}/bin/sed -n 's/.*"number" : \([0-9]*\).*/\1/p')
-    [ -n "$ws" ] || exit 1
-    ${omniwmctl} workspace move-to-monitor "$ws" right --force || ${omniwmctl} workspace move-to-monitor "$ws" left --force
+    ctl=${omniwmctl}
+    jq=${lib.getExe pkgs.jq}
+    active=$($ctl query active-workspace --json) || exit 1
+    ws=$(printf '%s' "$active" | $jq -r '.result.payload.workspace.number // empty')
+    cur=$(printf '%s' "$active" | $jq -r '.result.payload.display.id // empty')
+    [ -n "$ws" ] && [ -n "$cur" ] || exit 1
+    dir=$($ctl query displays --json | $jq -r --arg cur "$cur" -f ${otherMonitorDirection}) || exit 1
+    [ -n "$dir" ] || exit 1
+    for d in "$dir" right left up down; do
+      $ctl workspace move-to-monitor "$ws" "$d" --force >/dev/null 2>&1 && exit 0
+    done
+    exit 1
   '';
 
   binding = ws: ''
