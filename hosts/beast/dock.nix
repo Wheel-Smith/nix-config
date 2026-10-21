@@ -1,7 +1,11 @@
-{ ... }:
+{ lib, ... }:
 {
   system.defaults.dock = {
     autohide = true;
+    # Never show the Dock: macOS cannot turn it off, so it stays hidden and
+    # waits 1000 s before appearing at the screen edge. Overrides the shared
+    # 0 s in modules/darwin/preferences.nix. Cmd+Option+D still toggles it.
+    autohide-delay = lib.mkForce 1000.0;
     show-recents = false;
     launchanim = false;
     orientation = "bottom";
