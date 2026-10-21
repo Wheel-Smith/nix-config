@@ -23,8 +23,20 @@ final: prev: {
   # pass, but a test filter does not reach dotnetCheckHook, so the unit tests
   # are skipped for this package only. Drop once the release is cached or
   # nixpkgs skips the test.
-  bicep = prev.bicep.overrideAttrs (_: {
+  #
+  # Its Bicep.Local.Rpc project also runs protoc and grpc_csharp_plugin from the
+  # Grpc.Tools NuGet package, which ships only x86_64 macOS binaries, so the
+  # build dies with "Bad CPU type in executable" on Apple silicon without
+  # Rosetta. MSBuild reads environment variables as properties, so point
+  # Grpc.Tools at the native nixpkgs tools instead; protobuf_35 matches the
+  # Google.Protobuf 3.35 runtime bicep links against. Drop once Grpc.Tools
+  # ships macosx_arm64 binaries or nixpkgs does the same.
+  bicep = prev.bicep.overrideAttrs (old: {
     doCheck = false;
+    preBuild = (old.preBuild or "") + ''
+      export Protobuf_ProtocFullPath=${final.protobuf_35}/bin/protoc
+      export gRPC_PluginFullPath=${final.grpc}/bin/grpc_csharp_plugin
+    '';
   });
 
   # debugpy (pulled in by the ms-python.python VS Code extension) builds from
