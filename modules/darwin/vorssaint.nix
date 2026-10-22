@@ -101,8 +101,8 @@ in
       screenshotPreviewEnabled = true;
       # Screenshot and recording controls in the notch panel.
       notchCapture = true;
-      # Notch mascot: the orange robot.
-      notchMascotPalette = "orange";
+      # Notch mascot: the peach robot. (Vorssaint has no orange palette.)
+      notchMascotPalette = "peach";
       notchMascotShape = "squircle";
       notchMascotStyle = "robot";
       # Edge-drag and option-key tiling, separate from the Window Layout
