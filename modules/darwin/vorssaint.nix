@@ -95,6 +95,10 @@ in
       recorderShortcutEnabled = true;
       recorderShortcut = "shift+command:18";
       recorderShowCaptureMenuOnShortcut = false;
+      # Where captures land, and the small preview after a screenshot.
+      screenshotSaveFolder = "/Users/${username}/Documents/screenshots";
+      recorderSaveFolder = "/Users/${username}/Documents/recordings";
+      screenshotPreviewEnabled = true;
       # Screenshot and recording controls in the notch panel.
       notchCapture = true;
       # Notch mascot: the orange robot.
