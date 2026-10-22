@@ -35,7 +35,7 @@ let
     "portManager" "notch" "notchCalendar" "notchNotifications" "notchGestures" "notchTimer"
     "notchAccessories" "notchLyrics" "notchQueue" "notchLiveEqualizer" "notchDownloads"
     "notchWatch" "notchMascot" "monitorCPU" "monitorGPU" "monitorMemory" "monitorNetwork"
-    "monitorDisk" "monitorPower"
+    "monitorDisk" "monitorPower" "brightness" "screenOCR"
   ];
   features = [
     "switcher" "dockPreview" "dockClick" "windowMaximizer" "windowLayout" "autoQuit"
@@ -101,6 +101,12 @@ in
       screenshotPreviewEnabled = true;
       # Screenshot and recording controls in the notch panel.
       notchCapture = true;
+      # Liquid glass for the Dynamic Island and for other windows and panels.
+      notchLiquidGlassEnabled = true;
+      liquidGlassEnabled = true;
+      liquidGlassOtherWindows = true;
+      # Per-display brightness control (DDC for external monitors).
+      brightnessControlEnabled = true;
       # Notch mascot: the peach robot. (Vorssaint has no orange palette.)
       notchMascotPalette = "peach";
       notchMascotShape = "squircle";
