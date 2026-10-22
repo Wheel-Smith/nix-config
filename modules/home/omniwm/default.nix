@@ -151,10 +151,13 @@ let
     };
 
     gaps = {
-      size = 5.0;
+      # Work: 10 px between tiles, 8 px at the screen edges.
+      size = if isWork then 10.0 else 5.0;
       # Layout fullscreen (Option+F) keeps the outer margins too.
       fullscreenUsesOuterGaps = true;
-      outer = { left = 5.0; right = 5.0; top = 5.0; bottom = 5.0; };
+      outer =
+        let edge = if isWork then 8.0 else 5.0;
+        in { left = edge; right = edge; top = edge; bottom = edge; };
     };
 
     # Built in, replacing JankyBorders. Orange matches the macOS accent set in
