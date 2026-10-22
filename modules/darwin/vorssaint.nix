@@ -35,7 +35,7 @@ let
     "portManager" "notch" "notchCalendar" "notchNotifications" "notchGestures" "notchTimer"
     "notchAccessories" "notchLyrics" "notchQueue" "notchLiveEqualizer" "notchDownloads"
     "notchWatch" "notchMascot" "monitorCPU" "monitorGPU" "monitorMemory" "monitorNetwork"
-    "monitorDisk" "monitorPower" "brightness" "screenOCR"
+    "monitorDisk" "monitorPower" "brightness" "screenOCR" "notchAgents"
   ];
   features = [
     "switcher" "dockPreview" "dockClick" "windowMaximizer" "windowLayout" "autoQuit"
