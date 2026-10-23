@@ -13,6 +13,11 @@
     # XDG_CONFIG_HOME is provided by xdg.enable in user.nix. Setting it here as
     # well would be a conflicting definition of the same option.
     HISTIGNORE = "pwd:ls:cd";
+    # uv ships its own root store (webpki-roots), which still trusted the
+    # compromised eMudhra intermediates before 0.13.4. The macOS trust store
+    # blocked them on 2026-10-19, so use that instead. Also makes uv honour
+    # certificates installed by an MDM or a TLS-inspecting proxy.
+    UV_SYSTEM_CERTS = "1";
     MANROFFOPT = "-c";
     MANPAGER = "sh -c 'col -bx | bat -l man -p'";
     FZF_DEFAULT_OPTS = ''
