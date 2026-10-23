@@ -23,6 +23,10 @@
     brews = [
       "lazyssh"
       "sofka" # Kubernetes TUI; a formula, not a cask
+      # uv is a formula, not a nixpkgs package: nixpkgs-unstable is stuck on
+      # 0.13.1, and the eMudhra CA incident needs 0.13.4 or newer. Move it back
+      # to home.packages once nixpkgs catches up.
+      "uv"
     ];
 
     casks = [

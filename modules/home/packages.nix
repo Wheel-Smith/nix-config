@@ -24,7 +24,6 @@ let
     starship
     tmux
     tree
-    uv
     zoxide
   ];
 

@@ -1,6 +1,7 @@
 { pkgs, ... }:
 {
-  # Python workflow starts with uv from home.packages.
+  # Python workflow starts with uv, installed as a Homebrew formula (see
+  # hosts/*/homebrew.nix).
   # Orbstack and Ollama app are installed via Homebrew casks.
   # opencode remains a Homebrew brew initially.
 

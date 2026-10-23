@@ -13,6 +13,10 @@
       "lazyssh"
       # "llama.cpp"
       "mole"
+      # uv is a formula, not a nixpkgs package: nixpkgs-unstable is stuck on
+      # 0.13.1, and the eMudhra CA incident needs 0.13.4 or newer. Move it back
+      # to home.packages once nixpkgs catches up.
+      "uv"
       # "opencode"
       # powershell comes from nixpkgs (hosts/beast/packages.nix): the formula
       # drags in a 670 MB dotnet SDK, the nixpkgs build is self-contained.
