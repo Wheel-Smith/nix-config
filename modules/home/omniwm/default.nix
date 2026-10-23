@@ -148,6 +148,8 @@ let
       updateChecksEnabled = false;
       # `omniwmctl` needs this. Local socket only; AeroSpace's CLI was always on.
       ipcEnabled = true;
+      # Windows snap into place instead of sliding.
+      animationsEnabled = false;
     };
 
     gaps = {
