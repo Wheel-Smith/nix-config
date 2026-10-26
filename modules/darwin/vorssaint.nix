@@ -67,6 +67,7 @@ let
     notchQueue = "notchQueueEnabled";
     notchLiveEqualizer = "notchLiveEqualizer";
     notchDownloads = "notchDownloadsEnabled";
+    notchAgents = "notchAgentsEnabled";
     notchWatch = "notchWatchEnabled";
     notchMascot = "notchMascotEnabled";
     smoothScroll = "smoothScrollEnabled";
@@ -109,8 +110,8 @@ in
       brightnessControlEnabled = true;
       # Notch mascot: the peach robot. (Vorssaint has no orange palette.)
       notchMascotPalette = "peach";
-      notchMascotShape = "squircle";
-      notchMascotStyle = "robot";
+      notchMascotShape = "ball";
+      notchMascotStyle = "minimal";
       # Edge-drag and option-key tiling, separate from the Window Layout
       # feature above. Not set in the app by default, so they are written
       # off here to keep windows floating.
