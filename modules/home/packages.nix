@@ -31,10 +31,18 @@ let
   #   nmap, wireshark — port scanning and packet capture on a corporate network
   #                     trip IDS and look indefensible in an audit
   #   tailscale       — a mesh tunnel bypassing corporate network controls
+  # tailscale: the daemon is the tailscale-app cask, so `tailscale` execs the
+  # CLI bundled in it. The nixpkgs CLI lagged the daemon a release behind and
+  # warned on every call. A wrapper rather than a zsh alias, so scripts and
+  # agents in non-interactive shells get it too.
+  tailscaleAppCli = pkgs.writeShellScriptBin "tailscale" ''
+    exec /Applications/Tailscale.app/Contents/MacOS/Tailscale "$@"
+  '';
+
   personalOnly = with pkgs; [
     cmatrix
     nmap
-    tailscale
+    tailscaleAppCli
     wireshark
     yt-dlp
   ];
