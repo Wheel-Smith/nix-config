@@ -116,8 +116,19 @@ brew-upgrade:
     brew upgrade
     brew upgrade --cask
 
-# Update everything: flake inputs, switch (which relinks brew taps), then upgrade brew packages
-upgrade: update switch brew-upgrade
+# Determinate owns the Nix install (see modules/darwin/gc.nix), so neither
+# `nix flake update` nor `darwin-rebuild switch` ever upgrades Nix itself; only
+# this does. It fetches the latest Determinate Nix and restarts the daemon, and
+# does nothing when already current. Security fixes ship this way, e.g. 3.24.1
+# (Brotli CVE-2026-111497).
+#
+# Upgrade Nix itself (the Determinate daemon and CLI)
+nix-upgrade:
+    sudo determinate-nixd upgrade
+    nix --version
+
+# Update everything: Nix itself first (so the switch runs on it), then inputs, switch, brew
+upgrade: nix-upgrade update switch brew-upgrade
 
 # Format all Nix files (requires nixpkgs-fmt / alejandra in your packages)
 fmt:
