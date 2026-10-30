@@ -12,17 +12,9 @@
          reattach = true;
        };
 
-    # eMudhra CA compromise (Oct 2026): eight intermediate keys under these
-    # roots were cracked, so anyone holding them can mint certificates for any
-    # site. NSS 3.131.1 removes the three roots below; nixpkgs has that as
-    # cacert 3.131.1 on master, but it is a mass rebuild still on its way to
-    # nixpkgs-unstable. Dropping them from the system bundle covers everything
-    # that reads NIX_SSL_CERT_FILE (/etc/ssl/certs/ca-certificates.crt): Nix's
-    # curl and git, nix itself, and Nix's Python certifi. Harmless to keep
-    # once the new cacert lands; remove then.
-    security.pki.caCertificateBlacklist = [
-      "emSign ECC Root CA - G3"
-      "emSign Root CA - C1"
-      "emSign ECC Root CA - C3"
-    ];
+    # eMudhra CA compromise (Oct 2026): the three emSign roots were dropped
+    # from the system bundle here until nixpkgs shipped cacert 3.131.1 (NSS
+    # 3.131.1), which removes them itself. A blacklist for roots that are no
+    # longer in the store fails the build ("Certs in blocklist but not in cert
+    # store"), so it is gone; do not re-add it.
      }
