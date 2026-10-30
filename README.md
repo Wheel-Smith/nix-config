@@ -260,8 +260,7 @@ Hosts share code through an `isWork` flag threaded via `specialArgs`:
   `hosts/<host>/`.
 - **`beast`-only** — `firewall.nix` and `hostname.nix` (compliance controls the
   MDM owns on the work Mac; see [`docs/work-mac.md`](docs/work-mac.md) for why
-  importing them there can hard-fail activation), `playwright.nix`, and anything
-  from a third-party flake (the `sofka` Kubernetes TUI).
+  importing them there can hard-fail activation) and `playwright.nix`.
 
 ---
 

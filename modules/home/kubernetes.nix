@@ -6,8 +6,8 @@
   ...
 }:
 # Kubernetes learning setup, on both Macs. The work Mac gets the same
-# nixpkgs tools and cluster setup, but nothing from third-party flakes (no
-# sofka, see modules/home/default.nix) and a smaller VM.
+# nixpkgs tools and cluster setup, and a smaller VM. sofka (k9s-style TUI)
+# is a Homebrew formula on both hosts (hosts/<host>/homebrew.nix).
 #
 # Clusters live in their own Colima VM, the `k8s` profile, so experiments
 # never compete with the everyday Docker VM (`default`, containers.nix):
@@ -91,12 +91,9 @@ in
       programs.starship.settings.kubernetes.disabled = false;
     }
 
-    # beast only. sofka's module is not even imported on the work Mac, so the
-    # option does not exist there; and the work Mac's VS Code manages no
-    # extensions through Nix (vscode.nix).
+    # beast only: the work Mac's VS Code manages no extensions through Nix
+    # (vscode.nix).
     (lib.optionalAttrs (!isWork) {
-      programs.sofka.enable = true; # k9s-style TUI; package from the sofka flake input
-
       programs.vscode.profiles.default.extensions = [
         pkgs.vscode-marketplace.ms-kubernetes-tools.vscode-kubernetes-tools
       ];

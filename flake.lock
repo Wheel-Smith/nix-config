@@ -16,21 +16,6 @@
         "type": "github"
       }
     },
-    "crane": {
-      "locked": {
-        "lastModified": 1792350552,
-        "narHash": "sha256-292lvpvxTGKryKxh3/3tcIVi85CwYGdl4oOi113Sob8=",
-        "owner": "ipetkov",
-        "repo": "crane",
-        "rev": "e675a36b7377bebe41d548388a2501cbb16d380d",
-        "type": "github"
-      },
-      "original": {
-        "owner": "ipetkov",
-        "repo": "crane",
-        "type": "github"
-      }
-    },
     "home-manager": {
       "inputs": {
         "nixpkgs": [
@@ -202,32 +187,7 @@
         "nix-vscode-extensions": "nix-vscode-extensions",
         "nixpkgs": "nixpkgs",
         "nixpkgs-azure": "nixpkgs-azure",
-        "sofka": "sofka",
         "sops-nix": "sops-nix"
-      }
-    },
-    "sofka": {
-      "inputs": {
-        "crane": "crane",
-        "home-manager": [
-          "home-manager"
-        ],
-        "nixpkgs": [
-          "nixpkgs"
-        ]
-      },
-      "locked": {
-        "lastModified": 1793264986,
-        "narHash": "sha256-7GzszM1fMXYMjtixJwyLqxXatG4/FGDrLSRF5JRBKdY=",
-        "owner": "nklmilojevic",
-        "repo": "sofka",
-        "rev": "287d4fd685ff2257cbe663cd091d45b85d0522c0",
-        "type": "github"
-      },
-      "original": {
-        "owner": "nklmilojevic",
-        "repo": "sofka",
-        "type": "github"
       }
     },
     "sops-nix": {
