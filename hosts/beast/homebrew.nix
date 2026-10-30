@@ -13,6 +13,8 @@
       "lazyssh"
       # "llama.cpp"
       "mole"
+      # A formula, not a cask: there is no openconnect cask.
+      "openconnect"
       # uv is a formula, not a nixpkgs package: nixpkgs-unstable is stuck on
       # 0.13.1, and the eMudhra CA incident needs 0.13.4 or newer. Move it back
       # to home.packages once nixpkgs catches up.
