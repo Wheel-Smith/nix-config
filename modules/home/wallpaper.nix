@@ -33,20 +33,26 @@ let
   # and this one survives rebuilds even as the store path behind it changes.
   relPath = ".local/share/wallpapers/${name}.png";
   absPath = "${config.home.homeDirectory}/${relPath}";
+
+  # desktoppr is a Homebrew cask (hosts/beast/homebrew.nix), whose .pkg
+  # installs it here.
+  desktoppr = "/usr/local/bin/desktoppr";
 in
 {
   home.file = lib.optionalAttrs (!isWork) {
     ${relPath}.source = wallpaper;
   };
 
-  home.packages = lib.optionals (!isWork) [ pkgs.desktoppr ];
-
   # Re-applied on every activation, so the wallpaper is genuinely declarative:
   # change it by hand and the next switch puts it back.
   home.activation = lib.optionalAttrs (!isWork) {
     setWallpaper = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-      $DRY_RUN_CMD ${pkgs.desktoppr}/bin/desktoppr "${absPath}" || \
-        echo "wallpaper: desktoppr failed — is this a GUI login session?" >&2
+      if [ ! -x ${desktoppr} ]; then
+        echo "wallpaper: ${desktoppr} missing, is the desktoppr cask installed?" >&2
+      else
+        $DRY_RUN_CMD ${desktoppr} "${absPath}" || \
+          echo "wallpaper: desktoppr failed — is this a GUI login session?" >&2
+      fi
     '';
   };
 }

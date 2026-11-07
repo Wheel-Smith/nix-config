@@ -37,6 +37,10 @@
       "crystalfetch"
       "cyberduck"
       "dbeaver-community"
+      # Sets the wallpaper (modules/home/wallpaper.nix). nixpkgs builds it with
+      # swiftpm, which is often missing from the binary cache and then builds
+      # locally with all its Swift dependencies. The cask is a signed .pkg.
+      "desktoppr"
       "excalidrawz"
       "firefox"
       "ghostty"
