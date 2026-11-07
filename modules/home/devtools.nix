@@ -13,5 +13,9 @@
     # shellcheck bundles its own binary in the extension, so not required here,
     # but adding it makes the CLI available too:
     shellcheck
+    # A current `python3` ahead of Apple's /usr/bin/python3, which the Command
+    # Line Tools freeze at 3.9.6. Follows nixpkgs' default Python (3.14 today).
+    # Projects still pin their own version with uv; this is only the default.
+    python3
   ];
 }
