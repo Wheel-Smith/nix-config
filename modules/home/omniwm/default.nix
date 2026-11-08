@@ -46,7 +46,6 @@ let
   # Small utility windows float instead of being squeezed into a tile. A rule
   # for an app that is not installed is a no-op, so this is shared.
   floatWindowRules = map (bundleId: { inherit bundleId; layout = "float"; }) [
-    "com.apple.finder" # Option+Shift+Space tiles one when wanted
     "com.apple.systempreferences" # System Settings
     "com.apple.calculator"
     "me.proton.pass.electron"
