@@ -128,6 +128,22 @@
             fastfetch
               fi
               ''
+
+        # A switch cannot reach shells that are already open, so each one
+        # checks on its next prompt. :A resolves the link without forking.
+        # rehash drops zsh's cached command paths (e.g. /usr/bin/python3);
+        # aliases, functions and hooks still need a fresh shell.
+        ''
+          typeset -g _nix_system=''${''${:-/run/current-system}:A}
+          _nix_switch_check() {
+            local now=''${''${:-/run/current-system}:A}
+            [[ $now == $_nix_system ]] && return
+            _nix_system=$now
+            rehash
+            print -P "%F{yellow}nix: system switched; commands rehashed, exec zsh reloads aliases and hooks%f"
+          }
+          precmd_functions+=(_nix_switch_check)
+        ''
               ];
   };
   programs.zoxide = {
