@@ -30,6 +30,10 @@
       # Hold Ctrl+Cmd and drag anywhere in a window to move it.
       NSWindowShouldDragOnGesture = true;
 
+# Appearance "Auto": light by day, dark from sunset. VS Code follows it
+# (window.autoDetectColorScheme in modules/home/vscode.nix).
+      AppleInterfaceStyleSwitchesAutomatically = true;
+
 # Disable automatic text substitutions/corrections.
       NSAutomaticCapitalizationEnabled = false;
       NSAutomaticDashSubstitutionEnabled = false;

@@ -22,6 +22,7 @@ let
   nixManagedExtensions = with pkgs.vscode-marketplace; [
     eamodio.gitlens
     georglauterbach.evergruv
+    jdinhlife.gruvbox             # the theme pair set in userSettings
     ms-azuretools.vscode-containers
     ms-python.debugpy
     ms-python.python
@@ -65,6 +66,14 @@ in
         "files.trimTrailingWhitespace" = true;
         "files.insertFinalNewline" = true;
         "telemetry.telemetryLevel" = "off";
+
+        # Follow macOS Light/Dark (Appearance is "Auto", so it switches at
+        # sunrise and sunset; see modules/darwin/preferences.nix). On work the
+        # extension is not Nix-managed: install jdinhlife.gruvbox there. Each
+        # theme also comes in Hard and Soft contrast.
+        "window.autoDetectColorScheme" = true;
+        "workbench.preferredDarkColorTheme" = "Gruvbox Dark Medium";
+        "workbench.preferredLightColorTheme" = "Gruvbox Light Medium";
 
         # Ruff as the Python formatter + fix/organise imports on save.
         "[python]" = {
