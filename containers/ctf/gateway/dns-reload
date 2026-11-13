@@ -1,0 +1,24 @@
+#!/bin/sh
+# (Re)generate dnsmasq's config and restart it.
+#   CTF_DNS_DOMAINS="htb thm.local"  -> those domains go to the VPN's DNS
+#   CTF_DNS_DOMAINS="*"              -> every name goes to the VPN's DNS
+#   empty                            -> nothing resolves (use IPs or /etc/hosts)
+# All other names get no answer: the dev container cannot tunnel data out
+# through DNS. The egress proxy resolves names itself, on its own path.
+conf=/run/ctf/dnsmasq.conf
+{
+  echo "listen-address=127.0.0.1"
+  echo "bind-interfaces"
+  echo "no-resolv"
+  echo "no-hosts"
+  echo "user=root"
+  echo "cache-size=500"
+  for ns in $(cat /run/ctf/vpn-dns 2>/dev/null | tr ',' ' '); do
+    for d in $CTF_DNS_DOMAINS; do
+      if [ "$d" = "*" ]; then echo "server=$ns"; else echo "server=/$d/$ns"; fi
+    done
+  done
+} > "$conf"
+pkill dnsmasq 2>/dev/null || true
+sleep 0.2
+dnsmasq --conf-file="$conf" --pid-file=/run/ctf/dnsmasq.pid

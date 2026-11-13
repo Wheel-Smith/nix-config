@@ -1,0 +1,70 @@
+name: ctf
+
+# Two containers sharing ONE network namespace:
+#   gateway  holds the VPN, the firewall (kill switch), DNS and the egress proxy.
+#            The only container with NET_ADMIN.
+#   dev      the Kali workstation. Joins the gateway's netns, so every packet it
+#            sends hits the gateway's firewall, and it has no capability to
+#            change it.
+services:
+  gateway:
+    build: ./gateway
+    hostname: gateway
+    restart: unless-stopped
+    cap_drop: [ALL]
+    cap_add:
+      - NET_ADMIN # tun device, nftables, routes
+      - NET_BIND_SERVICE # dnsmasq on :53
+      - SETUID # drop the proxy to its own uid
+      - SETGID
+    devices:
+      - /dev/net/tun:/dev/net/tun
+    sysctls:
+      net.ipv6.conf.all.disable_ipv6: "1"
+      # Unprivileged ping for dev (it has no NET_RAW, see README).
+      net.ipv4.ping_group_range: "0 2147483647"
+    environment:
+      VPN_SERVER: ${VPN_SERVER:?set VPN_SERVER in .env}
+      VPN_PORT: ${VPN_PORT:-443}
+      VPN_USER: ${VPN_USER:?set VPN_USER in .env}
+      VPN_PROTOCOL: ${VPN_PROTOCOL:-anyconnect}
+      VPN_EXTRA_ARGS: ${VPN_EXTRA_ARGS:-}
+      CTF_DNS_DOMAINS: ${CTF_DNS_DOMAINS:-}
+      # Secrets come from the macOS Keychain via bin/ctf, never from a file.
+      VPN_PASSWORD: ${VPN_PASSWORD:-}
+      OPENROUTER_API_KEY: ${OPENROUTER_API_KEY:-}
+      DEEPSEEK_API_KEY: ${DEEPSEEK_API_KEY:-}
+      APPROVAL_URL: "${APPROVAL_URL:-http://host.docker.internal:8765}"
+      APPROVAL_SECRET: "${APPROVAL_SECRET:?start the lab with bin/ctf up}"
+    volumes:
+      - gwstate:/var/lib/ctf # "always allow" decisions
+    healthcheck:
+      test: ["CMD", "/usr/local/bin/healthcheck"]
+      interval: 3s
+      timeout: 3s
+      retries: 40
+      start_period: 5s
+
+  dev:
+    build: ./dev
+    network_mode: service:gateway
+    depends_on:
+      gateway:
+        condition: service_healthy
+    init: true
+    user: ctf
+    working_dir: /work
+    cap_drop: [ALL]
+    security_opt:
+      - no-new-privileges:true
+    pids_limit: 4096
+    command: sleep infinity
+    volumes:
+      # The ONLY host directory the lab can see (also the only one the ctf
+      # Colima VM mounts, modules/home/ctf.nix). Kept outside the git repo.
+      - ${CTF_WORK:-${HOME}/ctf/work}:/work
+      - devhome:/home/ctf
+
+volumes:
+  gwstate:
+  devhome:

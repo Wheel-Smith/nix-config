@@ -1,0 +1,10 @@
+{
+  "name": "ctf",
+  "dockerComposeFile": ["../compose.yaml"],
+  "service": "dev",
+  "runServices": ["gateway", "dev"],
+  "workspaceFolder": "/work",
+  "remoteUser": "ctf",
+  "updateRemoteUserUID": false,
+  "shutdownAction": "stopCompose"
+}

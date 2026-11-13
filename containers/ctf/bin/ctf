@@ -1,0 +1,72 @@
+#!/usr/bin/env bash
+# Control script for the CTF lab. Secrets live in the macOS Keychain and are
+# passed to containers through the process environment, never written to disk.
+set -euo pipefail
+
+here=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
+run="$here/.run"
+export DOCKER_CONTEXT=colima-ctf
+export CTF_WORK=$HOME/ctf/work
+compose=(docker compose -f "$here/compose.yaml" --project-directory "$here")
+
+get() { security find-generic-password -a "$USER" -s "ctf-$1" -w 2>/dev/null || true; }
+put() { security add-generic-password -U -a "$USER" -s "ctf-$1" -w; } # prompts, so the value never hits argv
+
+vm_running() { colima status -p ctf >/dev/null 2>&1; }
+
+start_approvald() {
+  mkdir -p "$run"
+  if [[ -f $run/approvald.pid ]] && kill -0 "$(cat "$run/approvald.pid")" 2>/dev/null; then return; fi
+  CTF_APPROVAL_SECRET=$APPROVAL_SECRET nohup python3 "$here/host/approvald.py" \
+    >"$run/approvald.log" 2>&1 &
+  echo $! >"$run/approvald.pid"
+}
+
+stop_approvald() {
+  [[ -f $run/approvald.pid ]] && kill "$(cat "$run/approvald.pid")" 2>/dev/null || true
+  rm -f "$run/approvald.pid"
+}
+
+case "${1:-help}" in
+  secrets)
+    echo "VPN password:"; put vpn-password
+    echo "OpenRouter API key (spend-capped; empty line to skip):"; put openrouter || true
+    echo "DeepSeek API key (spend-capped; empty line to skip):"; put deepseek || true
+    ;;
+  up)
+    [[ -f $here/.env ]] || { echo "create $here/.env from .env.example" >&2; exit 1; }
+    mkdir -p "$CTF_WORK"
+    vm_running || colima start -p ctf
+    export APPROVAL_SECRET=$(get approval)
+    if [[ -z $APPROVAL_SECRET ]]; then
+      APPROVAL_SECRET=$(openssl rand -hex 32)
+      security add-generic-password -U -a "$USER" -s ctf-approval -w "$APPROVAL_SECRET"
+    fi
+    export VPN_PASSWORD=$(get vpn-password) OPENROUTER_API_KEY=$(get openrouter) DEEPSEEK_API_KEY=$(get deepseek)
+    set -a; source "$here/.env"; set +a
+    start_approvald
+    "${compose[@]}" up -d --build --wait
+    echo "lab is up: ctf shell"
+    ;;
+  shell) exec "${compose[@]}" exec dev tmux new -A -s ctf ;;
+  logs) exec "${compose[@]}" logs -f "${2:-gateway}" ;;
+  allowed) "${compose[@]}" exec gateway cat /var/lib/ctf/allow.txt ;;
+  revoke) "${compose[@]}" exec gateway sh -c "sed -i '/^$2\$/d' /var/lib/ctf/allow.txt" ;;
+  down)
+    export APPROVAL_SECRET=x VPN_SERVER=x VPN_USER=x # compose needs them set to parse the file
+    "${compose[@]}" down
+    stop_approvald
+    [[ ${2:-} == --vm ]] && colima stop -p ctf
+    ;;
+  *)
+    cat <<EOF
+ctf secrets        store VPN password + API keys in the Keychain
+ctf up             start VM, approval daemon, gateway (VPN) and dev container
+ctf shell          tmux session in the dev container
+ctf logs [svc]     follow gateway (default) or dev logs
+ctf allowed        list "always allow" hosts
+ctf revoke HOST    remove one
+ctf down [--vm]    stop the lab (and the VM)
+EOF
+    ;;
+esac

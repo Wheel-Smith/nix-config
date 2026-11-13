@@ -26,7 +26,9 @@
     ./kubernetes.nix
   ]
   # Browser tests for personal projects; nothing on the work Mac needs them.
-  ++ lib.optional (!isWork) ./playwright.nix;
+  ++ lib.optional (!isWork) ./playwright.nix
+  # CTF lab VM (its own Colima profile); personal Mac only.
+  ++ lib.optional (!isWork) ./ctf.nix;
 
   # Darwin defaults to ~/Library/Application Support for app configs, and several
   # home-manager modules branch on this flag to decide where to write. lazygit is

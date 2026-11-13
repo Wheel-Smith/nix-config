@@ -1,0 +1,19 @@
+#!/bin/sh
+# openconnect hook. The stock vpnc-script builds tun0 and the routes; we keep
+# it away from /etc/resolv.conf (by hiding the DNS variables) and instead feed
+# the VPN's DNS servers to dnsmasq, which only answers the configured domains.
+dns="${INTERNAL_IP4_DNS:-}"
+unset INTERNAL_IP4_DNS INTERNAL_IP6_DNS CISCO_DEF_DOMAIN CISCO_SPLIT_DNS
+/usr/share/vpnc-scripts/vpnc-script "$@"
+rc=$?
+case "${reason:-}" in
+  connect | reconnect)
+    printf '%s\n' "$dns" > /run/ctf/vpn-dns
+    dns-reload
+    ;;
+  disconnect)
+    : > /run/ctf/vpn-dns
+    dns-reload
+    ;;
+esac
+exit $rc

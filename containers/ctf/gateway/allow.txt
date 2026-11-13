@@ -1,0 +1,4 @@
+# Hosts the egress proxy lets through WITHOUT asking (one per line; a name
+# also matches its subdomains). Deliberately empty: everything else prompts.
+# The LLM endpoints (OpenRouter, DeepSeek) do not need to be listed, they go
+# through the key-injecting reverse proxy on 127.0.0.1:8080.
