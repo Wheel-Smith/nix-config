@@ -21,6 +21,7 @@
     };
 
     brews = [
+      "awscli"
       "lazyssh"
       "sofka" # Kubernetes TUI; a formula, not a cask
       # uv is a formula, not a nixpkgs package: nixpkgs-unstable is stuck on
